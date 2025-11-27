@@ -1,0 +1,36 @@
+/* Modern clean arrows */
+.modern-arrow {
+  width: 36px !important;
+  height: 36px !important;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(6px);
+  border-radius: 50%;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  transition: 0.2s ease-in-out;
+}
+
+.modern-arrow:hover {
+  background: white;
+  transform: scale(1.05);
+}
+
+.left-arrow {
+  left: 14px !important;
+}
+
+.right-arrow {
+  right: 14px !important;
+}
+
+.slick-dots li button:before {
+  font-size: 10px;
+  color: #bfbfbf;
+}
+
+.slick-dots li.slick-active button:before {
+  color: #2d7df4 !important; /* Intellicart Blue */
+}
