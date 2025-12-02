@@ -5,10 +5,10 @@ const connectDatabase = async () => {
   try {
     await mongoose.connect(MONGO_URI);
     console.log("MongoDB Connected Successfully");
-  } catch (err) {
-    console.log("MongoDB Connection Error:", err);
+  } catch (error) {
+    console.log("MongoDB Error:", error);
     process.exit(1);
   }
-}
+};
 
 module.exports = connectDatabase;

@@ -1,4 +1,4 @@
-require("dotenv").config({ path: "./backend/config/config.env" });
+require("dotenv").config({ path: __dirname + "/config/config.env" });
 
 const express = require("express");
 const app = express();
@@ -49,6 +49,8 @@ require("./config/database")();
 
 // START SERVER
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on ${PORT}`);
 });
+
