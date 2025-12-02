@@ -37,15 +37,15 @@ cloudinary.v2.config({
 });
 
 // Routes
-app.use("/api/v1", require("./backend/routes/userRoute"));
-app.use("/api/v1", require("./backend/routes/productRoute"));
-app.use("/api/v1", require("./backend/routes/orderRoute"));
+app.use("/api/v1", require("./routes/userRoute"));
+app.use("/api/v1", require("./routes/productRoute"));
+app.use("/api/v1", require("./routes/orderRoute"));
 
 // Error Middleware
-app.use(require("./backend/middlewares/error"));
+app.use(require("./middlewares/error"));
 
 // DB
-require("./backend/config/database")();
+require("./config/database")();
 
 // START SERVER
 const PORT = process.env.PORT || 5000;

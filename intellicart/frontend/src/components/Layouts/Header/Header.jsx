@@ -56,7 +56,13 @@ const Header = () => {
             </span>
           )}
 
-          {togglePrimaryDropDown && <PrimaryDropDownMenu user={user} />}
+          {togglePrimaryDropDown && (
+  <PrimaryDropDownMenu 
+    user={user}
+    setTogglePrimaryDropDown={setTogglePrimaryDropDown}
+  />
+)}
+
 
           <span
             className="hidden sm:flex items-center text-gray-700 font-medium gap-1 cursor-pointer hover:text-blue-600 transition"
