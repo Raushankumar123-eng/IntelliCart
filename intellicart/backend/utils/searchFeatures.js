@@ -1,51 +1,57 @@
 class SearchFeatures {
-    constructor(query, queryString) {
-        this.query = query
-        this.queryString = queryString
+    constructor(query, queryStr) {
+        this.query = query;
+        this.queryStr = queryStr;
     }
 
     search() {
-        const keyword = this.queryString.keyword ? {
-            name: {
-                $regex: this.queryString.keyword,
-                $options: "i",
-            }
-        } : {};
-
-        // console.log(keyword);
+        const keyword = this.queryStr.keyword
+            ? {
+                  name: {
+                      $regex: this.queryStr.keyword,
+                      $options: "i",
+                  },
+              }
+            : {};
 
         this.query = this.query.find({ ...keyword });
         return this;
     }
 
     filter() {
-        const queryCopy = { ...this.queryString }
+        const queryCopy = { ...this.queryStr };
 
-        // fields to remove for category
+        // Remove fields that are not filters
         const removeFields = ["keyword", "page", "limit"];
+        removeFields.forEach((key) => delete queryCopy[key]);
 
-        // console.log(queryCopy);
-        removeFields.forEach(key => delete queryCopy[key]);
-        // console.log(queryCopy);
+        let queryStringCopy = JSON.stringify(queryCopy);
 
-        // price filter
-        let queryString = JSON.stringify(queryCopy);
-        queryString = queryString.replace(/\b(gt|gte|lt|lte)\b/g, key => `$${key}`);
+        queryStringCopy = queryStringCopy.replace(
+            /\b(gt|gte|lt|lte)\b/g,
+            (key) => `$${key}`
+        );
+        queryStringCopy = JSON.parse(queryStringCopy);
 
-        // console.log(JSON.parse(queryString));
+        // 🔥 Category Case-Insensitive Filter Fix
+        if (queryCopy.category) {
+            queryStringCopy.category = {
+                $regex: queryCopy.category,
+                $options: "i",
+            };
+        }
 
-        this.query = this.query.find(JSON.parse(queryString));
+        this.query = this.query.find(queryStringCopy);
         return this;
     }
 
     pagination(resultPerPage) {
-        const currentPage = Number(this.queryString.page) || 1;
+        const currentPage = Number(this.queryStr.page) || 1;
+        const skip = resultPerPage * (currentPage - 1);
 
-        const skipProducts = resultPerPage * (currentPage - 1);
-
-        this.query = this.query.limit(resultPerPage).skip(skipProducts);
+        this.query = this.query.limit(resultPerPage).skip(skip);
         return this;
     }
-};
+}
 
 module.exports = SearchFeatures;
