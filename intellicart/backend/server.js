@@ -11,21 +11,22 @@ const cloudinary = require("cloudinary");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ CORS Fix (Allow Vercel + Localhost + Cookies)
+// 🚀 Final CORS Fix for Cross-Site Cookies
 app.use(
   cors({
     origin: [
-      "https://intelli-cart.vercel.app", // FRONTEND LIVE URL
-      "http://localhost:3000" // Local development
+      "https://intelli-cart.vercel.app",  // LIVE Frontend
+      "http://localhost:3000"             // Dev Frontend
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   })
 );
 
-// ✅ Required so cookies can be stored by frontend
+// Required for Cookies
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Credentials", "true");
   next();
 });
 
