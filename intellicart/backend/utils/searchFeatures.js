@@ -21,14 +21,11 @@ class SearchFeatures {
     filter() {
         const queryCopy = { ...this.queryStr };
 
-        // 🔥 Extract category before fields deletion
         const category = queryCopy.category;
 
-        // Remove unnecessary fields
         const removeFields = ["keyword", "page", "limit"];
         removeFields.forEach((key) => delete queryCopy[key]);
 
-        // Convert operators
         let queryStringCopy = JSON.stringify(queryCopy);
         queryStringCopy = queryStringCopy.replace(
             /\b(gt|gte|lt|lte)\b/g,
@@ -36,7 +33,6 @@ class SearchFeatures {
         );
         queryStringCopy = JSON.parse(queryStringCopy);
 
-        // 🔥 Case-insensitive category filtering
         if (category) {
             queryStringCopy.category = {
                 $regex: `^${category}$`,
@@ -45,7 +41,14 @@ class SearchFeatures {
         }
 
         this.query = this.query.find(queryStringCopy);
+        return this;
+    }
 
+    pagination(resultPerPage) {
+        const currentPage = Number(this.queryStr.page) || 1;
+        const skip = resultPerPage * (currentPage - 1);
+
+        this.query = this.query.limit(resultPerPage).skip(skip);
         return this;
     }
 }
