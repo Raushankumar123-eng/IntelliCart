@@ -12,17 +12,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 🚀 Final CORS Fix for Cross-Site Cookies
+// 🚀 Final CORS Fix for Cross-Site Cookies
 app.use(
   cors({
     origin: [
-      "https://intelli-cart.vercel.app",  // LIVE Frontend
-      "http://localhost:3000"             // Dev Frontend
+      "https://intelli-cart.vercel.app", // LIVE Frontend (Vercel)
+      "http://localhost:3000"            // Frontend Dev (React default)
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Accept",
+      "X-Requested-With",
+      "Cookie"
+    ],
   })
 );
+
 
 // Required for Cookies
 app.use((req, res, next) => {

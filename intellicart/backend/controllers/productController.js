@@ -6,7 +6,6 @@ const cloudinary = require("cloudinary");
 
 // Get All Products
 exports.getAllProducts = asyncErrorHandler(async (req, res, next) => {
-
     const resultPerPage = 12;
 
     const searchFeature = new SearchFeatures(Product.find(), req.query)
@@ -29,7 +28,7 @@ exports.getAllProducts = asyncErrorHandler(async (req, res, next) => {
     });
 });
 
-// Slider Products
+// Product Slider
 exports.getProducts = asyncErrorHandler(async (req, res, next) => {
     const products = await Product.find();
     res.status(200).json({ success: true, products });
@@ -38,15 +37,11 @@ exports.getProducts = asyncErrorHandler(async (req, res, next) => {
 // Product Details
 exports.getProductDetails = asyncErrorHandler(async (req, res, next) => {
     const product = await Product.findById(req.params.id);
-
-    if (!product) {
-        return next(new ErrorHandler("Product Not Found", 404));
-    }
-
+    if (!product) return next(new ErrorHandler("Product Not Found", 404));
     res.status(200).json({ success: true, product });
 });
 
-// Admin Get All Products
+// Admin Get Products
 exports.getAdminProducts = asyncErrorHandler(async (req, res, next) => {
     const products = await Product.find();
     res.status(200).json({ success: true, products });
