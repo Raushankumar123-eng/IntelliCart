@@ -6,6 +6,8 @@ import { getAllOrders } from '../../actions/orderAction';
 import { getAllUsers } from '../../actions/userAction';
 import { categories } from '../../utils/constants';
 import MetaData from '../Layouts/MetaData';
+import { getProducts } from "../../actions/productAction";
+
 
 
 const MainData = () => {
@@ -27,6 +29,8 @@ const MainData = () => {
    useEffect(() => {
     dispatch(getAllOrders());
     dispatch(getAllUsers());
+    dispatch(getProducts());
+
 }, [dispatch]);
 
 
