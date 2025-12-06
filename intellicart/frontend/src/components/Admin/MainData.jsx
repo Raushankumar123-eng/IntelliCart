@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import Chart from 'chart.js/auto'
 import { Doughnut, Line, Pie, Bar } from 'react-chartjs-2';
-import { getAdminProducts } from '../../actions/productAction';
 import { useSelector, useDispatch } from 'react-redux';
 import { getAllOrders } from '../../actions/orderAction';
 import { getAllUsers } from '../../actions/userAction';
 import { categories } from '../../utils/constants';
 import MetaData from '../Layouts/MetaData';
+
 
 const MainData = () => {
 
@@ -24,11 +24,11 @@ const MainData = () => {
         }
     });
 
-    useEffect(() => {
-        dispatch(getAdminProducts());
-        dispatch(getAllOrders());
-        dispatch(getAllUsers());
-    }, [dispatch]);
+   useEffect(() => {
+    dispatch(getAllOrders());
+    dispatch(getAllUsers());
+}, [dispatch]);
+
 
     let totalAmount = orders?.reduce((total, order) => total + order.totalPrice, 0);
 
