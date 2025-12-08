@@ -17,47 +17,29 @@ class SearchFeatures {
         this.query = this.query.find({ ...keyword });
         return this;
     }
+filter() {
+    const queryCopy = { ...this.queryStr };
 
-    filter() {
-        const queryCopy = { ...this.queryStr };
+    const removeFields = ["keyword", "page", "limit"];
+    removeFields.forEach((key) => delete queryCopy[key]);
 
-        // Remove fields not needed for filter
-        const removeFields = ["keyword", "page", "limit"];
-        removeFields.forEach((key) => delete queryCopy[key]);
+    // Convert comparison operators
+    let queryString = JSON.stringify(queryCopy);
+    queryString = queryString.replace(/\b(gt|gte|lt|lte)\b/g, (key) => `$${key}`);
+    queryString = JSON.parse(queryString);
 
-        // Convert price and rating operators like gte, lte into MongoDB format
-        let queryStr = JSON.stringify(queryCopy);
-        queryStr = queryStr.replace(
-            /\b(gt|gte|lt|lte)\b/g,
-            (key) => `$${key}`
-        );
-
-        let parsedQuery = JSON.parse(queryStr);
-
-        // Fix category filter - case insensitive match
-        if (this.queryStr.category) {
-            parsedQuery.category = {
-                $regex: this.queryStr.category,
-                $options: "i",
-            };
-        }
-
-        // Ensure price filter always works
-        if (!parsedQuery.price) {
-            parsedQuery.price = {};
-        }
-        parsedQuery.price.$gte = parsedQuery.price.$gte || 0;
-        parsedQuery.price.$lte = parsedQuery.price.$lte || 200000;
-
-        // Ensure rating filter always works
-        if (!parsedQuery.ratings) {
-            parsedQuery.ratings = {};
-        }
-        parsedQuery.ratings.$gte = parsedQuery.ratings.$gte || 0;
-
-        this.query = this.query.find(parsedQuery);
-        return this;
+    // Soft Matching for Category
+    if (this.queryStr.category && this.queryStr.category.trim() !== "") {
+        queryString.category = {
+            $regex: this.queryStr.category.trim(), 
+            $options: "i" // case insensitive
+        };
     }
+
+    this.query = this.query.find(queryString);
+    return this;
+}
+
 
     pagination(resultPerPage) {
         const currentPage = Number(this.queryStr.page) || 1;
