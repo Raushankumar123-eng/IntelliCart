@@ -32,4 +32,10 @@ router
   .put(isAuthenticatedUser, authorizeRoles("admin"), updateProduct)
   .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteProduct);
 
+// Get all reviews of a product
+router
+  .route("/reviews")
+  .get(isAuthenticatedUser, getAllReviews);
+
+
 module.exports = router;
