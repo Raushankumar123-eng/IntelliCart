@@ -21,26 +21,41 @@ class SearchFeatures {
     filter() {
         const queryCopy = { ...this.queryStr };
 
-        const category = queryCopy.category;
-
+        // Remove fields not needed for filter
         const removeFields = ["keyword", "page", "limit"];
         removeFields.forEach((key) => delete queryCopy[key]);
 
-        let queryStringCopy = JSON.stringify(queryCopy);
-        queryStringCopy = queryStringCopy.replace(
+        // Convert price and rating operators like gte, lte into MongoDB format
+        let queryStr = JSON.stringify(queryCopy);
+        queryStr = queryStr.replace(
             /\b(gt|gte|lt|lte)\b/g,
             (key) => `$${key}`
         );
-        queryStringCopy = JSON.parse(queryStringCopy);
 
-        if (category) {
-            queryStringCopy.category = {
-                $regex: `^${category}$`,
+        let parsedQuery = JSON.parse(queryStr);
+
+        // Fix category filter - case insensitive match
+        if (this.queryStr.category) {
+            parsedQuery.category = {
+                $regex: this.queryStr.category,
                 $options: "i",
             };
         }
 
-        this.query = this.query.find(queryStringCopy);
+        // Ensure price filter always works
+        if (!parsedQuery.price) {
+            parsedQuery.price = {};
+        }
+        parsedQuery.price.$gte = parsedQuery.price.$gte || 0;
+        parsedQuery.price.$lte = parsedQuery.price.$lte || 200000;
+
+        // Ensure rating filter always works
+        if (!parsedQuery.ratings) {
+            parsedQuery.ratings = {};
+        }
+        parsedQuery.ratings.$gte = parsedQuery.ratings.$gte || 0;
+
+        this.query = this.query.find(parsedQuery);
         return this;
     }
 
