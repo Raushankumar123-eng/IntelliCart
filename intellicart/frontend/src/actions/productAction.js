@@ -249,6 +249,29 @@ export const newReview = (reviewData) => async (dispatch) => {
 };
 
 
+
+
+// ================== GET SIMILAR PRODUCTS ===================
+export const getSimilarProducts = (category) => async (dispatch) => {
+    try {
+        dispatch({ type: "SIMILAR_PRODUCTS_REQUEST" });
+
+        const { data } = await API.get(`/products?category=${category}`);
+
+        dispatch({
+            type: "SIMILAR_PRODUCTS_SUCCESS",
+            payload: data.products,
+        });
+    } catch (error) {
+        dispatch({
+            type: "SIMILAR_PRODUCTS_FAIL",
+            payload: error.response?.data?.message || "Something went wrong",
+        });
+    }
+};
+
+
+
 // Clear Errors
 export const clearErrors = () => (dispatch) => {
     dispatch({ type: CLEAR_ERRORS });

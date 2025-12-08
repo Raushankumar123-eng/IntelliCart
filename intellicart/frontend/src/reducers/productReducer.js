@@ -252,6 +252,24 @@ export const productReducer = (state = {}, { type, payload }) => {
             return { ...state, success: false };
 
 
+        case SIMILAR_PRODUCTS_REQUEST:
+            return {
+                loading: true,
+                products: [],
+            };
+        case SIMILAR_PRODUCTS_SUCCESS:
+            return {
+                loading: false,
+                products: payload,
+            };
+        case SIMILAR_PRODUCTS_FAIL:
+            return {
+                loading: false,
+                error: payload,
+            };
+
+
+
         default:
             return state;
     }
