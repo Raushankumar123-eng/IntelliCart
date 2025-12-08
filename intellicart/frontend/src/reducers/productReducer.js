@@ -227,13 +227,30 @@ export const productReducer = (state = {}, { type, payload }) => {
 
 
         case SLIDER_PRODUCTS_REQUEST:
-        return { loading: true, products: [] };
+            return { loading: true, products: [] };
 
         case SLIDER_PRODUCTS_SUCCESS:
-        return { loading: false, products: action.payload };
+            return { loading: false, products: action.payload };
 
         case SLIDER_PRODUCTS_FAIL:
-        return { loading: false, error: action.payload };
+            return { loading: false, error: action.payload };
+
+
+        case NEW_REVIEW_REQUEST:
+            return {
+                ...state,
+                loading: true
+            };
+
+        case NEW_REVIEW_SUCCESS:
+            return { ...state, loading: false, success: action.payload };
+
+        case NEW_REVIEW_FAIL:
+            return { ...state, loading: false, error: action.payload };
+
+        case NEW_REVIEW_RESET:
+            return { ...state, success: false };
+
 
         default:
             return state;
