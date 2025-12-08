@@ -154,6 +154,28 @@ export const deleteProduct = (id) => async (dispatch) => {
     }
 };
 
+
+
+// ================== ADMIN — GET ALL REVIEWS OF A PRODUCT ===================
+export const getAllReviews = (id) => async (dispatch) => {
+    try {
+        dispatch({ type: "ALL_REVIEW_REQUEST" });
+
+        const { data } = await API.get(`/reviews?id=${id}`);
+
+        dispatch({
+            type: "ALL_REVIEW_SUCCESS",
+            payload: data.reviews,
+        });
+    } catch (error) {
+        dispatch({
+            type: "ALL_REVIEW_FAIL",
+            payload: error.response?.data?.message || "Something went wrong",
+        });
+    }
+};
+
+
 // Clear Errors
 export const clearErrors = () => (dispatch) => {
     dispatch({ type: CLEAR_ERRORS });
