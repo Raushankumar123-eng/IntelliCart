@@ -49,4 +49,15 @@ router.route("/review")
   .put(isAuthenticatedUser, createProductReview);
 
 
+  const { getProductReviews, deleteReview } = require("../controllers/productController");
+
+router.route("/reviews")
+  .get(isAuthenticatedUser, getProductReviews)
+  .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteReview);
+
+router.route("/review")
+  .put(isAuthenticatedUser, createProductReview);
+
+
+
 module.exports = router;
