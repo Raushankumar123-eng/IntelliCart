@@ -1,61 +1,110 @@
-class SearchFeatures {
-    constructor(query, queryStr) {
-        this.query = query;
-        this.queryStr = queryStr;
+import API from "../utils/axios";
+import {
+    ALL_PRODUCTS_REQUEST,
+    ALL_PRODUCTS_SUCCESS,
+    ALL_PRODUCTS_FAIL,
+    PRODUCT_DETAILS_REQUEST,
+    PRODUCT_DETAILS_SUCCESS,
+    PRODUCT_DETAILS_FAIL,
+    NEW_REVIEW_REQUEST,
+    NEW_REVIEW_SUCCESS,
+    NEW_REVIEW_FAIL,
+    CLEAR_ERRORS,
+    SIMILAR_PRODUCTS_REQUEST,
+    SIMILAR_PRODUCTS_SUCCESS,
+    SIMILAR_PRODUCTS_FAIL,
+} from "../constants/productConstants";
+
+// Get All Products
+export const getProducts = (
+    keyword = "",
+    category = "",
+    price = [0, 200000],
+    ratings = 0,
+    page = 1
+) => async (dispatch) => {
+    try {
+        dispatch({ type: ALL_PRODUCTS_REQUEST });
+
+        let link = `/products?keyword=${keyword}&page=${page}&price[gte]=${price[0]}&price[lte]=${price[1]}&ratings[gte]=${ratings}`;
+        if (category) link += `&category=${encodeURIComponent(category)}`;
+
+        const { data } = await API.get(link);
+
+        dispatch({
+            type: ALL_PRODUCTS_SUCCESS,
+            payload: data,
+        });
+    } catch (error) {
+        dispatch({
+            type: ALL_PRODUCTS_FAIL,
+            payload: error.response?.data?.message || "Something went wrong",
+        });
     }
+};
 
-    search() {
-        const keyword = this.queryStr.keyword
-            ? {
-                  name: {
-                      $regex: this.queryStr.keyword,
-                      $options: "i",
-                  },
-              }
-            : {};
+// Product Details
+export const getProductDetails = (id) => async (dispatch) => {
+    try {
+        dispatch({ type: PRODUCT_DETAILS_REQUEST });
 
-        this.query = this.query.find({ ...keyword });
-        return this;
+        const { data } = await API.get(`/product/${id}`);
+
+        dispatch({
+            type: PRODUCT_DETAILS_SUCCESS,
+            payload: data.product,
+        });
+    } catch (error) {
+        dispatch({
+            type: PRODUCT_DETAILS_FAIL,
+            payload: error.response?.data?.message,
+        });
     }
-filter() {
-    const queryCopy = { ...this.queryStr };
+};
 
-    // Remove fields which are not needed for filtering
-    const removeFields = ["keyword", "page", "limit"];
-    removeFields.forEach((key) => delete queryCopy[key]);
+// ========== NEW REVIEW ==========
+export const newReview = (reviewData) => async (dispatch) => {
+    try {
+        dispatch({ type: NEW_REVIEW_REQUEST });
 
-    // Apply numeric filters (price, ratings)
-    let queryString = JSON.stringify(queryCopy);
-    queryString = queryString.replace(
-        /\b(gt|gte|lt|lte)\b/g,
-        (key) => `$${key}`
-    );
-    queryString = JSON.parse(queryString);
+        const { data } = await API.put("/review", reviewData, {
+            headers: { "Content-Type": "application/json" }
+        });
 
-    if (this.queryStr.category) {
-    const category = this.queryStr.category.trim().toLowerCase();
-
-    queryString.category = {
-        $regex: `^${category}$`,
-        $options: "i",
-    };
-}
-
-
-    // Apply search query
-    this.query = this.query.find(queryString);
-    return this;
-}
-
-
-
-    pagination(resultPerPage) {
-        const currentPage = Number(this.queryStr.page) || 1;
-        const skip = resultPerPage * (currentPage - 1);
-
-        this.query = this.query.limit(resultPerPage).skip(skip);
-        return this;
+        dispatch({
+            type: NEW_REVIEW_SUCCESS,
+            payload: data.success,
+        });
+    } catch (error) {
+        dispatch({
+            type: NEW_REVIEW_FAIL,
+            payload: error.response?.data?.message,
+        });
     }
-}
+};
 
-module.exports = SearchFeatures;
+// ========== SIMILAR PRODUCTS ==========
+export const getSimilarProducts = (category) => async (dispatch) => {
+    try {
+        dispatch({ type: SIMILAR_PRODUCTS_REQUEST });
+
+        const { data } = await API.get(
+            `/products?category=${encodeURIComponent(category)}`
+        );
+
+        dispatch({
+            type: SIMILAR_PRODUCTS_SUCCESS,
+            payload: data.products,
+        });
+    } catch (error) {
+        dispatch({
+            type: SIMILAR_PRODUCTS_FAIL,
+            payload: error.response?.data?.message,
+        });
+    }
+};
+
+// Clear Errors
+export const clearErrors = () => (dispatch) => {
+    dispatch({ type: CLEAR_ERRORS });
+};
