@@ -176,6 +176,30 @@ export const getAllReviews = (id) => async (dispatch) => {
 };
 
 
+
+// ================== ADMIN — DELETE REVIEW ===================
+export const deleteReview = (productId, reviewId) => async (dispatch) => {
+    try {
+        dispatch({ type: "DELETE_REVIEW_REQUEST" });
+
+        const { data } = await API.delete(
+            `/reviews?id=${reviewId}&productId=${productId}`, 
+            { withCredentials: true }
+        );
+
+        dispatch({
+            type: "DELETE_REVIEW_SUCCESS",
+            payload: data.success,
+        });
+    } catch (error) {
+        dispatch({
+            type: "DELETE_REVIEW_FAIL",
+            payload: error.response?.data?.message || "Something went wrong",
+        });
+    }
+};
+
+
 // Clear Errors
 export const clearErrors = () => (dispatch) => {
     dispatch({ type: CLEAR_ERRORS });
