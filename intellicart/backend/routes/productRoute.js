@@ -44,4 +44,9 @@ router
   .delete(isAuthenticatedUser, deleteReview);
 
 
+
+router.route("/review")
+  .put(isAuthenticatedUser, createProductReview);
+
+
 module.exports = router;
