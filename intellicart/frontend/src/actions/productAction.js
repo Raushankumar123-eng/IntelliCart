@@ -9,10 +9,19 @@ import {
     NEW_PRODUCT_REQUEST,
     NEW_PRODUCT_SUCCESS,
     NEW_PRODUCT_FAIL,
-    CLEAR_ERRORS
+    DELETE_PRODUCT_REQUEST,
+    DELETE_PRODUCT_SUCCESS,
+    DELETE_PRODUCT_FAIL,
+    UPDATE_PRODUCT_REQUEST,
+    UPDATE_PRODUCT_SUCCESS,
+    UPDATE_PRODUCT_FAIL,
+    ADMIN_PRODUCTS_REQUEST,
+    ADMIN_PRODUCTS_SUCCESS,
+    ADMIN_PRODUCTS_FAIL,
+    CLEAR_ERRORS,
 } from "../constants/productConstants";
 
-// ================== Get All Products ===================
+// Get All Products
 export const getProducts = (
     keyword = "",
     category = "",
@@ -24,7 +33,6 @@ export const getProducts = (
         dispatch({ type: ALL_PRODUCTS_REQUEST });
 
         let link = `/products?keyword=${keyword}&page=${page}&price[gte]=${price[0]}&price[lte]=${price[1]}&ratings[gte]=${ratings}`;
-
         if (category) link += `&category=${category}`;
 
         const { data } = await API.get(link, { withCredentials: true });
@@ -41,7 +49,7 @@ export const getProducts = (
     }
 };
 
-// ================== Get Product Details ===================
+// Product Details
 export const getProductDetails = (id) => async (dispatch) => {
     try {
         dispatch({ type: PRODUCT_DETAILS_REQUEST });
@@ -60,7 +68,26 @@ export const getProductDetails = (id) => async (dispatch) => {
     }
 };
 
-// ================== Create Product (ADMIN) ===================
+// Admin - Get All Products
+export const getAdminProducts = () => async (dispatch) => {
+    try {
+        dispatch({ type: ADMIN_PRODUCTS_REQUEST });
+
+        const { data } = await API.get(`/admin/products`, { withCredentials: true });
+
+        dispatch({
+            type: ADMIN_PRODUCTS_SUCCESS,
+            payload: data.products,
+        });
+    } catch (error) {
+        dispatch({
+            type: ADMIN_PRODUCTS_FAIL,
+            payload: error.response?.data?.message || "Something went wrong",
+        });
+    }
+};
+
+// Admin - Create Product
 export const createProduct = (productData) => async (dispatch) => {
     try {
         dispatch({ type: NEW_PRODUCT_REQUEST });
@@ -79,13 +106,55 @@ export const createProduct = (productData) => async (dispatch) => {
     } catch (error) {
         dispatch({
             type: NEW_PRODUCT_FAIL,
-            payload:
-                error.response?.data?.message || "Something went wrong",
+            payload: error.response?.data?.message || "Something went wrong",
         });
     }
 };
 
-// ================== Clear Errors ===================
+// Admin - Update Product
+export const updateProduct = (id, productData) => async (dispatch) => {
+    try {
+        dispatch({ type: UPDATE_PRODUCT_REQUEST });
+
+        const config = {
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
+        };
+
+        const { data } = await API.put(`/admin/product/${id}`, productData, config);
+
+        dispatch({
+            type: UPDATE_PRODUCT_SUCCESS,
+            payload: data.success,
+        });
+    } catch (error) {
+        dispatch({
+            type: UPDATE_PRODUCT_FAIL,
+            payload: error.response?.data?.message || "Something went wrong",
+        });
+    }
+};
+
+// Admin - Delete Product
+export const deleteProduct = (id) => async (dispatch) => {
+    try {
+        dispatch({ type: DELETE_PRODUCT_REQUEST });
+
+        const { data } = await API.delete(`/admin/product/${id}`, { withCredentials: true });
+
+        dispatch({
+            type: DELETE_PRODUCT_SUCCESS,
+            payload: data.success,
+        });
+    } catch (error) {
+        dispatch({
+            type: DELETE_PRODUCT_FAIL,
+            payload: error.response?.data?.message || "Something went wrong",
+        });
+    }
+};
+
+// Clear Errors
 export const clearErrors = () => (dispatch) => {
     dispatch({ type: CLEAR_ERRORS });
 };
