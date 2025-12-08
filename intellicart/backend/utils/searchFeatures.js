@@ -20,25 +20,31 @@ class SearchFeatures {
 filter() {
     const queryCopy = { ...this.queryStr };
 
+    // Remove fields which are not needed for filtering
     const removeFields = ["keyword", "page", "limit"];
     removeFields.forEach((key) => delete queryCopy[key]);
 
-    // Convert comparison operators
+    // Apply numeric filters (price, ratings)
     let queryString = JSON.stringify(queryCopy);
-    queryString = queryString.replace(/\b(gt|gte|lt|lte)\b/g, (key) => `$${key}`);
+    queryString = queryString.replace(
+        /\b(gt|gte|lt|lte)\b/g,
+        (key) => `$${key}`
+    );
     queryString = JSON.parse(queryString);
 
-    // Soft Matching for Category
+    // ⭐ Category filter fix (case-insensitive + trim)
     if (this.queryStr.category && this.queryStr.category.trim() !== "") {
         queryString.category = {
-            $regex: this.queryStr.category.trim(), 
-            $options: "i" // case insensitive
+            $regex: this.queryStr.category.trim(),
+            $options: "i"
         };
     }
 
+    // Apply search query
     this.query = this.query.find(queryString);
     return this;
 }
+
 
 
     pagination(resultPerPage) {
