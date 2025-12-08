@@ -24,9 +24,8 @@ import {
     CLEAR_ERRORS,
     SIMILAR_PRODUCTS_REQUEST,
     SIMILAR_PRODUCTS_SUCCESS,
-    SIMILAR_PRODUCTS_FAIL
+    SIMILAR_PRODUCTS_FAIL,
 } from "../constants/productConstants";
-
 
 // Get All Products
 export const getProducts = (
@@ -42,12 +41,10 @@ export const getProducts = (
         let link = `/products?keyword=${keyword}&page=${page}&price[gte]=${price[0]}&price[lte]=${price[1]}&ratings[gte]=${ratings}`;
         if (category) link += `&category=${category}`;
 
-        const { data } = await API.get(link, { withCredentials: true });
+        const { data } = await API.get(link);
 
-        dispatch({
-            type: ALL_PRODUCTS_SUCCESS,
-            payload: data,
-        });
+        dispatch({ type: ALL_PRODUCTS_SUCCESS, payload: data });
+
     } catch (error) {
         dispatch({
             type: ALL_PRODUCTS_FAIL,
@@ -63,10 +60,8 @@ export const getProductDetails = (id) => async (dispatch) => {
 
         const { data } = await API.get(`/product/${id}`);
 
-        dispatch({
-            type: PRODUCT_DETAILS_SUCCESS,
-            payload: data.product,
-        });
+        dispatch({ type: PRODUCT_DETAILS_SUCCESS, payload: data.product });
+
     } catch (error) {
         dispatch({
             type: PRODUCT_DETAILS_FAIL,
@@ -80,12 +75,10 @@ export const getAdminProducts = () => async (dispatch) => {
     try {
         dispatch({ type: ADMIN_PRODUCTS_REQUEST });
 
-        const { data } = await API.get(`/admin/products`, { withCredentials: true });
+        const { data } = await API.get(`/admin/products`);
 
-        dispatch({
-            type: ADMIN_PRODUCTS_SUCCESS,
-            payload: data.products,
-        });
+        dispatch({ type: ADMIN_PRODUCTS_SUCCESS, payload: data.products });
+
     } catch (error) {
         dispatch({
             type: ADMIN_PRODUCTS_FAIL,
@@ -99,17 +92,10 @@ export const createProduct = (productData) => async (dispatch) => {
     try {
         dispatch({ type: NEW_PRODUCT_REQUEST });
 
-        const config = {
-            headers: { "Content-Type": "application/json" },
-            withCredentials: true,
-        };
+        const { data } = await API.post(`/admin/product/new`, productData);
 
-        const { data } = await API.post(`/admin/product/new`, productData, config);
+        dispatch({ type: NEW_PRODUCT_SUCCESS, payload: data });
 
-        dispatch({
-            type: NEW_PRODUCT_SUCCESS,
-            payload: data,
-        });
     } catch (error) {
         dispatch({
             type: NEW_PRODUCT_FAIL,
@@ -123,17 +109,10 @@ export const updateProduct = (id, productData) => async (dispatch) => {
     try {
         dispatch({ type: UPDATE_PRODUCT_REQUEST });
 
-        const config = {
-            headers: { "Content-Type": "application/json" },
-            withCredentials: true,
-        };
+        const { data } = await API.put(`/admin/product/${id}`, productData);
 
-        const { data } = await API.put(`/admin/product/${id}`, productData, config);
+        dispatch({ type: UPDATE_PRODUCT_SUCCESS, payload: data.success });
 
-        dispatch({
-            type: UPDATE_PRODUCT_SUCCESS,
-            payload: data.success,
-        });
     } catch (error) {
         dispatch({
             type: UPDATE_PRODUCT_FAIL,
@@ -147,12 +126,10 @@ export const deleteProduct = (id) => async (dispatch) => {
     try {
         dispatch({ type: DELETE_PRODUCT_REQUEST });
 
-        const { data } = await API.delete(`/admin/product/${id}`, { withCredentials: true });
+        const { data } = await API.delete(`/admin/product/${id}`);
 
-        dispatch({
-            type: DELETE_PRODUCT_SUCCESS,
-            payload: data.success,
-        });
+        dispatch({ type: DELETE_PRODUCT_SUCCESS, payload: data.success });
+
     } catch (error) {
         dispatch({
             type: DELETE_PRODUCT_FAIL,
@@ -161,123 +138,22 @@ export const deleteProduct = (id) => async (dispatch) => {
     }
 };
 
-
-
-// ================== ADMIN — GET ALL REVIEWS OF A PRODUCT ===================
-export const getAllReviews = (id) => async (dispatch) => {
-    try {
-        dispatch({ type: "ALL_REVIEW_REQUEST" });
-
-        const { data } = await API.get(`/reviews?id=${id}`);
-
-        dispatch({
-            type: "ALL_REVIEW_SUCCESS",
-            payload: data.reviews,
-        });
-    } catch (error) {
-        dispatch({
-            type: "ALL_REVIEW_FAIL",
-            payload: error.response?.data?.message || "Something went wrong",
-        });
-    }
-};
-
-
-
-// ================== ADMIN — DELETE REVIEW ===================
-export const deleteReview = (productId, reviewId) => async (dispatch) => {
-    try {
-        dispatch({ type: "DELETE_REVIEW_REQUEST" });
-
-        const { data } = await API.delete(
-            `/reviews?id=${reviewId}&productId=${productId}`, 
-            { withCredentials: true }
-        );
-
-        dispatch({
-            type: "DELETE_REVIEW_SUCCESS",
-            payload: data.success,
-        });
-    } catch (error) {
-        dispatch({
-            type: "DELETE_REVIEW_FAIL",
-            payload: error.response?.data?.message || "Something went wrong",
-        });
-    }
-};
-
-
-
-// ================== SLIDER PRODUCTS (HOME PAGE) ===================
-export const getSliderProducts = () => async (dispatch) => {
-    try {
-        dispatch({ type: "SLIDER_PRODUCTS_REQUEST" });
-
-        const { data } = await API.get("/products/all");
-
-        dispatch({
-            type: "SLIDER_PRODUCTS_SUCCESS",
-            payload: data.products,
-        });
-
-    } catch (error) {
-        dispatch({
-            type: "SLIDER_PRODUCTS_FAIL",
-            payload: error.response?.data?.message || "Something went wrong",
-        });
-    }
-};
-
-
-
-// ================== NEW REVIEW ===================
-export const newReview = (reviewData) => async (dispatch) => {
-    try {
-        dispatch({ type: NEW_REVIEW_REQUEST });
-
-        const config = {
-            headers: { "Content-Type": "application/json" },
-            withCredentials: true,
-        };
-
-        const { data } = await API.put(`/review`, reviewData, config);
-
-        dispatch({
-            type: NEW_REVIEW_SUCCESS,
-            payload: data.success,
-        });
-    } catch (error) {
-        dispatch({
-            type: NEW_REVIEW_FAIL,
-            payload:
-                error.response?.data?.message || "Something went wrong",
-        });
-    }
-};
-
-
-
-
-// ================== GET SIMILAR PRODUCTS ===================
+// Get Similar Products
 export const getSimilarProducts = (category) => async (dispatch) => {
     try {
-        dispatch({ type: "SIMILAR_PRODUCTS_REQUEST" });
+        dispatch({ type: SIMILAR_PRODUCTS_REQUEST });
 
         const { data } = await API.get(`/products?category=${category}`);
 
-        dispatch({
-            type: "SIMILAR_PRODUCTS_SUCCESS",
-            payload: data.products,
-        });
+        dispatch({ type: SIMILAR_PRODUCTS_SUCCESS, payload: data.products });
+
     } catch (error) {
         dispatch({
-            type: "SIMILAR_PRODUCTS_FAIL",
+            type: SIMILAR_PRODUCTS_FAIL,
             payload: error.response?.data?.message || "Something went wrong",
         });
     }
 };
-
-
 
 // Clear Errors
 export const clearErrors = () => (dispatch) => {
