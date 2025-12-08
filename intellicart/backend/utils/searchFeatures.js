@@ -32,13 +32,15 @@ filter() {
     );
     queryString = JSON.parse(queryString);
 
-    // ⭐ Category filter fix (case-insensitive + trim)
-    if (this.queryStr.category && this.queryStr.category.trim() !== "") {
-        queryString.category = {
-            $regex: this.queryStr.category.trim(),
-            $options: "i"
-        };
-    }
+    if (this.queryStr.category) {
+    const category = this.queryStr.category.trim().toLowerCase();
+
+    queryString.category = {
+        $regex: `^${category}$`,
+        $options: "i",
+    };
+}
+
 
     // Apply search query
     this.query = this.query.find(queryString);
