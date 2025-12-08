@@ -8,25 +8,29 @@ const cloudinary = require("cloudinary");
 exports.getAllProducts = asyncErrorHandler(async (req, res, next) => {
     const resultPerPage = 12;
 
+    // Step 1: Search + Filter (without pagination)
     const searchFeature = new SearchFeatures(Product.find(), req.query)
         .search()
         .filter();
 
-    const filteredProducts = await searchFeature.query.clone();
-    const filteredProductsCount = filteredProducts.length;
+    let products = await searchFeature.query.clone();
+    const filteredProductsCount = products.length;
+
+    // Step 2: Pagination apply
     const productsCount = await Product.countDocuments();
-
     searchFeature.pagination(resultPerPage);
-    const paginatedProducts = await searchFeature.query.clone();
 
-    res.status(200).json({
+    products = await searchFeature.query.clone();
+
+    return res.status(200).json({
         success: true,
-        products: paginatedProducts,
+        products,
         productsCount,
         resultPerPage,
         filteredProductsCount,
     });
 });
+
 
 // Product Slider
 exports.getProducts = asyncErrorHandler(async (req, res, next) => {
