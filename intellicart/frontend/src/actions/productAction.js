@@ -18,8 +18,15 @@ import {
     ADMIN_PRODUCTS_REQUEST,
     ADMIN_PRODUCTS_SUCCESS,
     ADMIN_PRODUCTS_FAIL,
+    NEW_REVIEW_REQUEST,
+    NEW_REVIEW_SUCCESS,
+    NEW_REVIEW_FAIL,
     CLEAR_ERRORS,
+    SIMILAR_PRODUCTS_REQUEST,
+    SIMILAR_PRODUCTS_SUCCESS,
+    SIMILAR_PRODUCTS_FAIL
 } from "../constants/productConstants";
+
 
 // Get All Products
 export const getProducts = (
