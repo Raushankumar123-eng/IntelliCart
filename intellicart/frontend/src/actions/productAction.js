@@ -200,6 +200,28 @@ export const deleteReview = (productId, reviewId) => async (dispatch) => {
 };
 
 
+
+// ================== SLIDER PRODUCTS (HOME PAGE) ===================
+export const getSliderProducts = () => async (dispatch) => {
+    try {
+        dispatch({ type: "SLIDER_PRODUCTS_REQUEST" });
+
+        const { data } = await API.get("/products/all");
+
+        dispatch({
+            type: "SLIDER_PRODUCTS_SUCCESS",
+            payload: data.products,
+        });
+
+    } catch (error) {
+        dispatch({
+            type: "SLIDER_PRODUCTS_FAIL",
+            payload: error.response?.data?.message || "Something went wrong",
+        });
+    }
+};
+
+
 // Clear Errors
 export const clearErrors = () => (dispatch) => {
     dispatch({ type: CLEAR_ERRORS });

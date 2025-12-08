@@ -224,6 +224,17 @@ export const productReducer = (state = {}, { type, payload }) => {
                 ...state,
                 error: null,
             };
+
+
+        case SLIDER_PRODUCTS_REQUEST:
+        return { loading: true, products: [] };
+
+        case SLIDER_PRODUCTS_SUCCESS:
+        return { loading: false, products: action.payload };
+
+        case SLIDER_PRODUCTS_FAIL:
+        return { loading: false, error: action.payload };
+
         default:
             return state;
     }
