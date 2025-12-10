@@ -157,21 +157,23 @@ const Products = () => {
                                     <FormControl>
                                         <RadioGroup
                                             onChange={(e) => {
-                                                setRatings(e.target.value);
+                                                const encodedCategory = encodeURIComponent(e.target.value.trim());
+                                                setCategory(encodedCategory);
                                                 setCurrentPage(1);
                                             }}
-                                            value={ratings}
+                                            value={decodeURIComponent(category)}
                                         >
-                                            {[4, 3, 2, 1].map((el) => (
+                                            {categories.map((el, i) => (
                                                 <FormControlLabel
-                                                    key={el}
+                                                    key={i}
                                                     value={el}
                                                     control={<Radio size="small" />}
-                                                    label={<span className="flex items-center text-sm">{el}<StarIcon sx={{ fontSize: "12px", mr: 0.5 }} /> & above</span>}
+                                                    label={<span className="text-sm">{el}</span>}
                                                 />
                                             ))}
                                         </RadioGroup>
                                     </FormControl>
+
                                 )}
                             </div>
                         </div>
