@@ -21,29 +21,28 @@ class SearchFeatures {
     filter() {
         const queryCopy = { ...this.queryStr };
 
-        // Remove unwanted fields
         const removeFields = ["keyword", "page", "limit"];
         removeFields.forEach((key) => delete queryCopy[key]);
 
-        // Convert to JSON for gte, lte etc.
-        let queryStr = JSON.stringify(queryCopy);
-        queryStr = queryStr.replace(
+        let queryString = JSON.stringify(queryCopy);
+        queryString = queryString.replace(
             /\b(gt|gte|lt|lte)\b/g,
             (key) => `$${key}`
         );
-        queryStr = JSON.parse(queryStr);
+        queryString = JSON.parse(queryString);
 
-        // ✅ Category Filter (case-insensitive & trimmed)
+        // ⭐ Exact category match (case insensitive)
         if (this.queryStr.category && this.queryStr.category.trim() !== "") {
-            queryStr.category = {
-                $regex: this.queryStr.category.trim(),
-                $options: "i"
+            queryString.category = {
+                $regex: `^${this.queryStr.category.trim()}$`,
+                $options: "i",
             };
         }
 
-        this.query = this.query.find(queryStr);
+        this.query = this.query.find(queryString);
         return this;
     }
+
 
     pagination(resultPerPage) {
         const currentPage = Number(this.queryStr.page) || 1;
