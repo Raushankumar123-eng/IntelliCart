@@ -7,11 +7,11 @@ class SearchFeatures {
     search() {
         const keyword = this.queryStr.keyword
             ? {
-                  name: {
-                      $regex: this.queryStr.keyword,
-                      $options: "i",
-                  },
-              }
+                name: {
+                    $regex: this.queryStr.keyword.trim(),
+                    $options: "i", // case insensitive
+                },
+            }
             : {};
 
         this.query = this.query.find({ ...keyword });
@@ -21,26 +21,27 @@ class SearchFeatures {
     filter() {
         const queryCopy = { ...this.queryStr };
 
+        // Remove unwanted fields
         const removeFields = ["keyword", "page", "limit"];
         removeFields.forEach((key) => delete queryCopy[key]);
 
-        let queryString = JSON.stringify(queryCopy);
-        queryString = queryString.replace(
+        // Convert to JSON for gte, lte etc.
+        let queryStr = JSON.stringify(queryCopy);
+        queryStr = queryStr.replace(
             /\b(gt|gte|lt|lte)\b/g,
             (key) => `$${key}`
         );
-        queryString = JSON.parse(queryString);
+        queryStr = JSON.parse(queryStr);
 
-        // ✅ Category exact match (case-insensitive)
+        // ✅ Category Filter (case-insensitive & trimmed)
         if (this.queryStr.category && this.queryStr.category.trim() !== "") {
-    queryString.category = {
-        $regex: this.queryStr.category.trim(),
-        $options: "i"
-    };
-}
+            queryStr.category = {
+                $regex: this.queryStr.category.trim(),
+                $options: "i"
+            };
+        }
 
-
-        this.query = this.query.find(queryString);
+        this.query = this.query.find(queryStr);
         return this;
     }
 
