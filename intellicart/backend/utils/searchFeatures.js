@@ -33,11 +33,12 @@ class SearchFeatures {
 
         // ✅ Category exact match (case-insensitive)
         if (this.queryStr.category && this.queryStr.category.trim() !== "") {
-            queryString.category = {
-                $regex: `^${this.queryStr.category.trim()}$`,
-                $options: "i",
-            };
-        }
+    queryString.category = {
+        $regex: this.queryStr.category.trim(),
+        $options: "i"
+    };
+}
+
 
         this.query = this.query.find(queryString);
         return this;
