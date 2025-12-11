@@ -1,289 +1,158 @@
-import FormControl from "@mui/material/FormControl";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Pagination from "@mui/material/Pagination";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
-import Slider from "@mui/material/Slider";
-import { useSnackbar } from "notistack";
-import { useState, useEffect, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useParams, useLocation } from "react-router-dom";
-import { clearErrors, getProducts } from "../../actions/productAction";
-import Loader from "../Layouts/Loader";
-import MinCategory from "../Layouts/MinCategory";
-import Product from "./Product";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import StarIcon from "@mui/icons-material/Star";
-import { categories } from "../../utils/constants";
-import MetaData from "../Layouts/MetaData";
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Pagination from '@mui/material/Pagination';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import Slider from '@mui/material/Slider';
+import { useSnackbar } from 'notistack';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { clearErrors, getProducts } from '../../actions/productAction';
+import Loader from '../Layouts/Loader';
+import MinCategory from '../Layouts/MinCategory';
+import Product from './Product';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import StarIcon from '@mui/icons-material/Star';
+import { categories } from '../../utils/constants';
+import MetaData from '../Layouts/MetaData';
 
 const Products = () => {
-  const dispatch = useDispatch();
-  const { enqueueSnackbar } = useSnackbar();
 
-  const params = useParams();
-  const location = useLocation();
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { enqueueSnackbar } = useSnackbar();
+    const params = useParams();
+    const location = useLocation();
 
-  // ---------------- URL HANDLING ----------------
+    const queryParams = new URLSearchParams(location.search);
+    const initialCategory = queryParams.get("category") || "";
+    const [category, setCategory] = useState(initialCategory);
 
-  // path param: /products/:keyword  (used by search bar)
-  const rawKeyword = params.keyword ? decodeURIComponent(params.keyword) : "";
+    const [price, setPrice] = useState([0, 200000]);
+    const [ratings, setRatings] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
 
-  // query param: /products?category=Mobiles  (used by category links)
-  const queryParams = new URLSearchParams(location.search);
-  const categoryFromQuery = queryParams.get("category") || "";
+    const [categoryToggle, setCategoryToggle] = useState(true);
+    const [ratingsToggle, setRatingsToggle] = useState(true);
 
-  // helper: normalize string and match with categories list
-  const normalizeCategory = (value) => {
-    if (!value) return "";
-    const lower = value.toLowerCase();
-    const match = categories.find(
-      (c) => c.toLowerCase() === lower
-    );
-    return match || "";
-  };
+    const { products, loading, error, filteredProductsCount, resultPerPage } =
+        useSelector((state) => state.products);
 
-  // if URL has ?category=, use that
-  // else, if /products/fashion and "fashion" matches a category, treat it as category (NOT keyword)
-  const initialCategory = useMemo(() => {
-    if (categoryFromQuery) return normalizeCategory(categoryFromQuery);
-    if (rawKeyword) return normalizeCategory(rawKeyword);
-    return "";
-  }, [categoryFromQuery, rawKeyword]);
+    const keyword = params.keyword;
 
-  // final keyword to send to backend:
-  // if path part is actually a category -> don't use it as keyword
-  const effectiveKeyword = initialCategory ? "" : rawKeyword;
+    const priceHandler = (e, newPrice) => {
+        setPrice(newPrice);
+    };
 
-  // ---------------- STATE ----------------
+    const clearFilters = () => {
+        setPrice([0, 200000]);
+        setCategory("");
+        setRatings(0);
+        setCurrentPage(1);
+        navigate("/products");
+    };
 
-  const [category, setCategory] = useState(initialCategory);
-  const [price, setPrice] = useState([0, 200000]);
-  const [ratings, setRatings] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
+    useEffect(() => {
+        if (error) {
+            enqueueSnackbar(error, { variant: "error" });
+            dispatch(clearErrors());
+        }
 
-  const [categoryToggle, setCategoryToggle] = useState(true);
-  const [ratingsToggle, setRatingsToggle] = useState(true);
+        dispatch(getProducts(keyword, category, price, ratings, currentPage));
 
-  const {
-    products,
-    loading,
-    error,
-    productsCount,
-    resultPerPage,
-    filteredProductsCount,
-  } = useSelector((state) => state.products);
+        navigate(`/products?category=${category}`);
 
-  // ---------------- HANDLERS ----------------
+    }, [dispatch, keyword, category, price, ratings, currentPage]);
 
-  const priceHandler = (e, newPrice) => {
-    setPrice(newPrice);
-  };
+    return (
+        <>
+            <MetaData title="All Products | IntelliCart" />
+            <MinCategory />
 
-  const clearFilters = () => {
-    setPrice([0, 200000]);
-    setCategory("");
-    setRatings(0);
-    setCurrentPage(1);
-  };
+            <main className="w-full mt-14 sm:mt-0">
+                <div className="flex gap-3 mt-2 sm:mt-2 sm:mx-3 m-auto mb-7">
 
-  // ---------------- EFFECT: FETCH PRODUCTS ----------------
+                    {/* Filters */}
+                    <div className="hidden sm:flex flex-col w-1/5 px-1 bg-white shadow">
 
-  useEffect(() => {
-    if (error) {
-      enqueueSnackbar(error, { variant: "error" });
-      dispatch(clearErrors());
-    }
-
-    dispatch(
-      getProducts(
-        effectiveKeyword, // search keyword ("" if path is a category like /products/fashion)
-        category,         // category filter
-        price,
-        ratings,
-        currentPage
-      )
-    );
-  }, [
-    dispatch,
-    effectiveKeyword,
-    category,
-    price,
-    ratings,
-    currentPage,
-    error,
-    enqueueSnackbar,
-  ]);
-
-  // ---------------- RENDER ----------------
-
-  return (
-    <>
-      <MetaData title="All Products | IntelliCart" />
-      <MinCategory />
-
-      <main className="w-full mt-14 sm:mt-0">
-        <div className="flex gap-3 mt-2 sm:mt-2 sm:mx-3 m-auto mb-7">
-          {/* Filter Sidebar */}
-          <div className="hidden sm:flex flex-col w-1/5 px-1 bg-white shadow">
-            <div className="flex items-center justify-between gap-5 px-4 py-2 border-b">
-              <p className="text-lg font-medium">Filters</p>
-              <span
-                className="uppercase text-primary-blue text-xs cursor-pointer font-medium"
-                onClick={clearFilters}
-              >
-                clear all
-              </span>
-            </div>
-
-            <div className="flex flex-col gap-2 py-3 text-sm overflow-hidden">
-              {/* Price Filter */}
-              <div className="flex flex-col gap-2 border-b px-4">
-                <span className="font-medium text-xs">PRICE</span>
-
-                <Slider
-                  value={price}
-                  onChange={priceHandler}
-                  valueLabelDisplay="auto"
-                  min={0}
-                  max={200000}
-                />
-
-                <div className="flex gap-3 items-center justify-between mb-2">
-                  <span className="flex-1 border px-4 py-1 bg-gray-50">
-                    ₹{price[0].toLocaleString()}
-                  </span>
-                  <span className="font-medium text-gray-400">to</span>
-                  <span className="flex-1 border px-4 py-1 bg-gray-50">
-                    ₹{price[1].toLocaleString()}
-                  </span>
-                </div>
-              </div>
-
-              {/* Category Filter */}
-              <div className="flex flex-col border-b px-4">
-                <div
-                  className="flex justify-between cursor-pointer py-2 items-center"
-                  onClick={() => setCategoryToggle(!categoryToggle)}
-                >
-                  <p className="font-medium text-xs uppercase">Category</p>
-                  {categoryToggle ? (
-                    <ExpandLessIcon sx={{ fontSize: "20px" }} />
-                  ) : (
-                    <ExpandMoreIcon sx={{ fontSize: "20px" }} />
-                  )}
-                </div>
-
-                {categoryToggle && (
-                  <FormControl>
-                    <RadioGroup
-                      value={category}
-                      onChange={(e) => {
-                        setCategory(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                    >
-                      {categories.map((el, i) => (
-                        <FormControlLabel
-                          key={i}
-                          value={el}
-                          control={<Radio size="small" />}
-                          label={<span className="text-sm">{el}</span>}
-                        />
-                      ))}
-                    </RadioGroup>
-                  </FormControl>
-                )}
-              </div>
-
-              {/* Ratings Filter */}
-              <div className="flex flex-col border-b px-4">
-                <div
-                  className="flex justify-between cursor-pointer py-2 items-center"
-                  onClick={() => setRatingsToggle(!ratingsToggle)}
-                >
-                  <p className="font-medium text-xs uppercase">ratings</p>
-                  {ratingsToggle ? (
-                    <ExpandLessIcon sx={{ fontSize: "20px" }} />
-                  ) : (
-                    <ExpandMoreIcon sx={{ fontSize: "20px" }} />
-                  )}
-                </div>
-
-                {ratingsToggle && (
-                  <FormControl>
-                    <RadioGroup
-                      value={ratings}
-                      onChange={(e) => {
-                        setRatings(Number(e.target.value));
-                        setCurrentPage(1);
-                      }}
-                    >
-                      {[4, 3, 2, 1].map((el) => (
-                        <FormControlLabel
-                          key={el}
-                          value={el}
-                          control={<Radio size="small" />}
-                          label={
-                            <span className="flex items-center text-sm">
-                              {el}
-                              <StarIcon sx={{ fontSize: "12px", mr: 0.5 }} />{" "}
-                              &amp; above
+                        <div className="flex items-center justify-between gap-5 px-4 py-2 border-b">
+                            <p className="text-lg font-medium">Filters</p>
+                            <span className="uppercase text-primary-blue text-xs cursor-pointer font-medium" onClick={clearFilters}>
+                                clear all
                             </span>
-                          }
-                        />
-                      ))}
-                    </RadioGroup>
-                  </FormControl>
-                )}
-              </div>
-            </div>
-          </div>
+                        </div>
 
-          {/* Products List */}
-          <div className="flex-1">
-            {!loading && products?.length === 0 && (
-              <div className="flex flex-col items-center justify-center p-6 sm:p-16 bg-white shadow-sm rounded-sm">
-                <img
-                  draggable="false"
-                  className="w-1/2 h-44 object-contain"
-                  src="https://static-assets-web.flixcart.com/www/linchpin/fk-cp-zion/img/error-no-search-results_2353c5.png"
-                  alt="Search Not Found"
-                />
-                <h1 className="text-2xl font-medium">
-                  Sorry, no results found!
-                </h1>
-              </div>
-            )}
+                        {/* Category */}
+                        <div className="flex flex-col border-b px-4">
+                            <div className="flex justify-between cursor-pointer py-2 items-center"
+                                onClick={() => setCategoryToggle(!categoryToggle)}
+                            >
+                                <p className="font-medium text-xs uppercase">Category</p>
+                                {categoryToggle ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                            </div>
 
-            {loading ? (
-              <Loader />
-            ) : (
-              <div className="flex flex-col gap-2 pb-4 items-center bg-white">
-                <div className="grid grid-cols-1 sm:grid-cols-4 w-full pb-4 border-b">
-                  {products?.map((product) => (
-                    <Product {...product} key={product._id} />
-                  ))}
+                            {categoryToggle && (
+                                <FormControl>
+                                    <RadioGroup
+                                        onChange={(e) => {
+                                            setCategory(e.target.value);
+                                            setCurrentPage(1);
+                                        }}
+                                        value={category}
+                                    >
+                                        {categories.map((el, i) => (
+                                            <FormControlLabel
+                                                key={i}
+                                                value={el}
+                                                control={<Radio size="small" />}
+                                                label={<span className="text-sm">{el}</span>}
+                                            />
+                                        ))}
+                                    </RadioGroup>
+                                </FormControl>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* 📌 Product Display */}
+                    <div className="flex-1">
+
+                        {!loading && products?.length === 0 && (
+                            <div className="flex flex-col items-center">
+                                <h1 className="text-lg font-medium mt-10">
+                                    Sorry, no results found!
+                                </h1>
+                            </div>
+                        )}
+
+                        {loading ? (
+                            <Loader />
+                        ) : (
+                            <div className="flex flex-col gap-2 pb-4 items-center bg-white">
+                                <div className="grid grid-cols-1 sm:grid-cols-4 w-full pb-4 border-b">
+                                    {products?.map((product) => (
+                                        <Product {...product} key={product._id} />
+                                    ))}
+                                </div>
+
+                                {filteredProductsCount > resultPerPage && (
+                                    <Pagination
+                                        count={Number(((filteredProductsCount + 6) / resultPerPage).toFixed())}
+                                        page={currentPage}
+                                        onChange={(e, val) => setCurrentPage(val)}
+                                        color="primary"
+                                    />
+                                )}
+                            </div>
+                        )}
+                    </div>
+
                 </div>
-
-                {filteredProductsCount > resultPerPage && (
-                  <Pagination
-                    count={Number(
-                      ((filteredProductsCount + 6) / resultPerPage).toFixed()
-                    )}
-                    page={currentPage}
-                    onChange={(e, val) => setCurrentPage(val)}
-                    color="primary"
-                  />
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </main>
-    </>
-  );
+            </main>
+        </>
+    );
 };
 
 export default Products;
