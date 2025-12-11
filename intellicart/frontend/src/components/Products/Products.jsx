@@ -1,158 +1,134 @@
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Pagination from '@mui/material/Pagination';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import Slider from '@mui/material/Slider';
-import { useSnackbar } from 'notistack';
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { clearErrors, getProducts } from '../../actions/productAction';
-import Loader from '../Layouts/Loader';
-import MinCategory from '../Layouts/MinCategory';
-import Product from './Product';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import StarIcon from '@mui/icons-material/Star';
-import { categories } from '../../utils/constants';
-import MetaData from '../Layouts/MetaData';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { getProducts } from '../../actions/productActions';
+import Loader from '../Layouts/Loader/Loader';
+import ProductCard from './ProductCard';
+import Pagination from 'react-js-pagination';
+
+// Utility: safe read/normalize category so backend gets expected format
+const normalizeCategory = (c) => {
+  if (!c) return '';
+  // If category comes like "fashion" or "FASHION" -> make 'Fashion'
+  const trimmed = String(c).trim();
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+};
 
 const Products = () => {
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const { enqueueSnackbar } = useSnackbar();
-    const params = useParams();
-    const location = useLocation();
+  // --- Local UI state ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const [price] = useState([0, 25000]); // example — adapt if you have a filter UI
+  const [ratings] = useState(0);
 
-    const queryParams = new URLSearchParams(location.search);
-    const initialCategory = queryParams.get("category") || "";
-    const [category, setCategory] = useState(initialCategory);
+  // Read query params (keyword, category, page, price, ratings)
+  const query = new URLSearchParams(location.search);
+  const rawKeyword = query.get('keyword') || '';
+  const rawCategory = query.get('category') || '';
+  const rawPage = parseInt(query.get('page') || '1', 10);
 
-    const [price, setPrice] = useState([0, 200000]);
-    const [ratings, setRatings] = useState(0);
-    const [currentPage, setCurrentPage] = useState(1);
+  useEffect(() => {
+    // keep local page in sync with query param
+    if (!Number.isNaN(rawPage) && rawPage !== currentPage) {
+      setCurrentPage(rawPage);
+    }
+  }, [rawPage]);
 
-    const [categoryToggle, setCategoryToggle] = useState(true);
-    const [ratingsToggle, setRatingsToggle] = useState(true);
+  // Select products state from redux
+  const { loading, products, productsCount, resPerPage } = useSelector((state) => state.products);
 
-    const { products, loading, error, filteredProductsCount, resultPerPage } =
-        useSelector((state) => state.products);
+  // Fetch products whenever relevant query params change
+  useEffect(() => {
+    const keyword = rawKeyword;
+    const category = normalizeCategory(rawCategory);
 
-    const keyword = params.keyword;
+    // Call the action exactly as your backend expects: getProducts(keyword, category, price, ratings, page)
+    dispatch(getProducts(keyword, category, price, ratings, currentPage));
+  }, [dispatch, location.search, currentPage]);
 
-    const priceHandler = (e, newPrice) => {
-        setPrice(newPrice);
-    };
+  // When user picks a category (from UI buttons/dropdown), update query params properly
+  const onCategorySelect = (categoryValue) => {
+    const params = new URLSearchParams(location.search);
 
-    const clearFilters = () => {
-        setPrice([0, 200000]);
-        setCategory("");
-        setRatings(0);
-        setCurrentPage(1);
-        navigate("/products");
-    };
+    if (categoryValue) {
+      params.set('category', categoryValue);
+    } else {
+      params.delete('category');
+    }
 
-    useEffect(() => {
-        if (error) {
-            enqueueSnackbar(error, { variant: "error" });
-            dispatch(clearErrors());
-        }
+    // Reset to first page when changing category
+    params.set('page', '1');
 
-        dispatch(getProducts(keyword, category, price, ratings, currentPage));
+    // Keep other params like keyword intact
+    navigate({ pathname: '/products', search: `?${params.toString()}` }, { replace: false });
+  };
 
-        navigate(`/products?category=${category}`);
+  const setPageNo = (pageNumber) => {
+    const params = new URLSearchParams(location.search);
+    params.set('page', String(pageNumber));
+    navigate({ pathname: '/products', search: `?${params.toString()}` });
+    // local state will sync via useEffect that listens to query param
+  };
 
-    }, [dispatch, keyword, category, price, ratings, currentPage]);
+  // Example categories UI - adapt to your existing category menu/component
+  const categories = ['All', 'Mobiles', 'Fashion', 'Appliances'];
 
-    return (
+  return (
+    <div className="products-page">
+      {loading ? (
+        <Loader />
+      ) : (
         <>
-            <MetaData title="All Products | IntelliCart" />
-            <MinCategory />
+          <div className="products-filters">
+            <div className="categories">
+              {categories.map((cat) => {
+                const value = cat === 'All' ? '' : cat;
+                // Highlight selected category
+                const isActive = normalizeCategory(rawCategory) === normalizeCategory(value);
+                return (
+                  <button
+                    key={cat}
+                    className={`category-btn ${isActive ? 'active' : ''}`}
+                    onClick={() => onCategorySelect(value)}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-            <main className="w-full mt-14 sm:mt-0">
-                <div className="flex gap-3 mt-2 sm:mt-2 sm:mx-3 m-auto mb-7">
+          <div className="products-list">
+            {products && products.length > 0 ? (
+              products.map((prod) => <ProductCard key={prod._id} product={prod} />)
+            ) : (
+              <div>No products found.</div>
+            )}
+          </div>
 
-                    {/* Filters */}
-                    <div className="hidden sm:flex flex-col w-1/5 px-1 bg-white shadow">
-
-                        <div className="flex items-center justify-between gap-5 px-4 py-2 border-b">
-                            <p className="text-lg font-medium">Filters</p>
-                            <span className="uppercase text-primary-blue text-xs cursor-pointer font-medium" onClick={clearFilters}>
-                                clear all
-                            </span>
-                        </div>
-
-                        {/* Category */}
-                        <div className="flex flex-col border-b px-4">
-                            <div className="flex justify-between cursor-pointer py-2 items-center"
-                                onClick={() => setCategoryToggle(!categoryToggle)}
-                            >
-                                <p className="font-medium text-xs uppercase">Category</p>
-                                {categoryToggle ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                            </div>
-
-                            {categoryToggle && (
-                                <FormControl>
-                                    <RadioGroup
-                                        onChange={(e) => {
-                                            setCategory(e.target.value);
-                                            setCurrentPage(1);
-                                        }}
-                                        value={category}
-                                    >
-                                        {categories.map((el, i) => (
-                                            <FormControlLabel
-                                                key={i}
-                                                value={el}
-                                                control={<Radio size="small" />}
-                                                label={<span className="text-sm">{el}</span>}
-                                            />
-                                        ))}
-                                    </RadioGroup>
-                                </FormControl>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* 📌 Product Display */}
-                    <div className="flex-1">
-
-                        {!loading && products?.length === 0 && (
-                            <div className="flex flex-col items-center">
-                                <h1 className="text-lg font-medium mt-10">
-                                    Sorry, no results found!
-                                </h1>
-                            </div>
-                        )}
-
-                        {loading ? (
-                            <Loader />
-                        ) : (
-                            <div className="flex flex-col gap-2 pb-4 items-center bg-white">
-                                <div className="grid grid-cols-1 sm:grid-cols-4 w-full pb-4 border-b">
-                                    {products?.map((product) => (
-                                        <Product {...product} key={product._id} />
-                                    ))}
-                                </div>
-
-                                {filteredProductsCount > resultPerPage && (
-                                    <Pagination
-                                        count={Number(((filteredProductsCount + 6) / resultPerPage).toFixed())}
-                                        page={currentPage}
-                                        onChange={(e, val) => setCurrentPage(val)}
-                                        color="primary"
-                                    />
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                </div>
-            </main>
+          {productsCount > resPerPage && (
+            <div className="products-pagination">
+              <Pagination
+                activePage={currentPage}
+                itemsCountPerPage={resPerPage}
+                totalItemsCount={productsCount}
+                onChange={setPageNo}
+                nextPageText={'Next'}
+                prevPageText={'Prev'}
+                firstPageText={'First'}
+                lastPageText={'Last'}
+                itemClass={'page-item'}
+                linkClass={'page-link'}
+              />
+            </div>
+          )}
         </>
-    );
+      )}
+    </div>
+  );
 };
 
 export default Products;
