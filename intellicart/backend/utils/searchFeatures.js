@@ -9,7 +9,7 @@ class SearchFeatures {
             ? {
                 name: {
                     $regex: this.queryStr.keyword.trim(),
-                    $options: "i", // case insensitive
+                    $options: "i",
                 },
             }
             : {};
@@ -31,10 +31,17 @@ class SearchFeatures {
         );
         queryString = JSON.parse(queryString);
 
-        // ⭐ Exact category match (case insensitive)
+        // ⭐ Flexible category match (case insensitive)
+        // Accepts 'Mobile' / 'Mobiles' / 'mobile' etc.
+        // Escape user input to avoid accidental regex injection
         if (this.queryStr.category && this.queryStr.category.trim() !== "") {
+            const rawCat = this.queryStr.category.trim();
+            const escaped = rawCat.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+            // allow optional plural (s or es), and be case-insensitive
+            // matches: 'Mobile', 'Mobiles', 'mobile', 'mobiles'
             queryString.category = {
-                $regex: `^${this.queryStr.category.trim()}$`,
+                $regex: `^${escaped}(es|s)?$`,
                 $options: "i",
             };
         }
@@ -42,7 +49,6 @@ class SearchFeatures {
         this.query = this.query.find(queryString);
         return this;
     }
-
 
     pagination(resultPerPage) {
         const currentPage = Number(this.queryStr.page) || 1;

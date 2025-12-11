@@ -38,8 +38,8 @@ export const getProducts = (
     try {
         dispatch({ type: ALL_PRODUCTS_REQUEST });
 
-        let link = `/products?keyword=${keyword}&page=${page}&price[gte]=${price[0]}&price[lte]=${price[1]}&ratings[gte]=${ratings}`;
-        if (category) link += `&category=${category}`;
+        let link = `/products?keyword=${encodeURIComponent(keyword)}&page=${page}&price[gte]=${price[0]}&price[lte]=${price[1]}&ratings[gte]=${ratings}`;
+        if (category) link += `&category=${encodeURIComponent(category)}`;
 
         const { data } = await API.get(link);
 
@@ -143,7 +143,7 @@ export const getSimilarProducts = (category) => async (dispatch) => {
     try {
         dispatch({ type: SIMILAR_PRODUCTS_REQUEST });
 
-        const { data } = await API.get(`/products?category=${category}`);
+        const { data } = await API.get(`/products?category=${encodeURIComponent(category)}`);
 
         dispatch({ type: SIMILAR_PRODUCTS_SUCCESS, payload: data.products });
 
