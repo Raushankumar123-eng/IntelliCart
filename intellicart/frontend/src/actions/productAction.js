@@ -38,38 +38,44 @@ import {
 
 // Get All Products
 export const getProducts = (
-    keyword = "",
-    category = "",
-    price = [0, 200000],
-    ratings = 0,
-    page = 1
+  keyword = "",
+  category = "",
+  price = [0, 200000],
+  ratings = 0,
+  page = 1
 ) => async (dispatch) => {
-    try {
-        dispatch({ type: ALL_PRODUCTS_REQUEST });
+  try {
+    dispatch({ type: ALL_PRODUCT_REQUEST });
 
-        // Build API query string for backend
-        const params = new URLSearchParams();
+    let link = `/api/v1/products?`;
 
-        if (keyword.trim() !== "") params.set("keyword", keyword.trim());
-        if (category.trim() !== "") params.set("category", category.trim());
-
-        params.set("price[gte]", price[0]);
-        params.set("price[lte]", price[1]);
-        params.set("ratings[gte]", ratings);
-        params.set("page", page);
-
-        // THIS is the real backend request
-        const { data } = await API.get(`/products?${params.toString()}`);
-
-        dispatch({ type: ALL_PRODUCTS_SUCCESS, payload: data });
-
-    } catch (error) {
-        dispatch({
-            type: ALL_PRODUCTS_FAIL,
-            payload: error.response?.data?.message || "Something went wrong",
-        });
+    // 🟦 Only send keyword if user really typed it
+    if (keyword && keyword.trim() !== "") {
+      link += `keyword=${keyword}&`;
     }
+
+    // 🟩 Category filter
+    if (category) {
+      link += `category=${category}&`;
+    }
+
+    // 🟧 Price & rating always apply
+    link += `price[gte]=${price[0]}&price[lte]=${price[1]}&ratings[gte]=${ratings}&page=${page}`;
+
+    const { data } = await axios.get(link);
+
+    dispatch({
+      type: ALL_PRODUCT_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: ALL_PRODUCT_FAIL,
+      payload: error.response?.data?.message || "Something went wrong",
+    });
+  }
 };
+
 
 
 
