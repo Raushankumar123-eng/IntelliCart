@@ -178,3 +178,20 @@ exports.createProductReview = asyncErrorHandler(async (req, res, next) => {
 
   res.status(200).json({ success: true });
 });
+
+
+
+exports.getSliderProducts = async (req, res) => {
+    try {
+        const products = await Product.find().limit(10); // slider ke liye limited data
+        res.status(200).json({
+            success: true,
+            products
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};

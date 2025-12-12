@@ -10,6 +10,7 @@ const {
   getProductReviews,
   deleteReview,
   createProductReview,
+  getSliderProducts 
 } = require("../controllers/productController");
 
 const { isAuthenticatedUser, authorizeRoles } = require("../middlewares/auth");
