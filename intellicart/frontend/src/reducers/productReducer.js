@@ -97,3 +97,14 @@ export const productsReducer = (state = { products: [] }, action) => {
             return state;
     }
 };
+
+
+export {
+    productsReducer,
+    productDetailsReducer,
+    newReviewReducer,
+    newProductReducer,
+    productReducer,
+    productReviewsReducer,
+    reviewReducer
+};
