@@ -18,6 +18,7 @@ class SearchFeatures {
         return this;
     }
 
+
     filter() {
         const queryCopy = { ...this.queryStr };
 
@@ -31,24 +32,20 @@ class SearchFeatures {
         );
         queryString = JSON.parse(queryString);
 
-        // ⭐ Flexible category match (case insensitive)
-        // Accepts 'Mobile' / 'Mobiles' / 'mobile' etc.
-        // Escape user input to avoid accidental regex injection
+        // ⭐ Correct category filtering
         if (this.queryStr.category && this.queryStr.category.trim() !== "") {
             const rawCat = this.queryStr.category.trim();
-            const escaped = rawCat.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-            // allow optional plural (s or es), and be case-insensitive
-            // matches: 'Mobile', 'Mobiles', 'mobile', 'mobiles'
             queryString.category = {
-                $regex: `^${escaped}(es|s)?$`,
-                $options: "i",
+                $regex: `^${rawCat}$`,
+                $options: "i", // case-insensitive
             };
         }
 
         this.query = this.query.find(queryString);
         return this;
     }
+
 
     pagination(resultPerPage) {
         const currentPage = Number(this.queryStr.page) || 1;
