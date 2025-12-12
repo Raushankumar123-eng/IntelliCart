@@ -17,9 +17,15 @@ const { isAuthenticatedUser, authorizeRoles } = require("../middlewares/auth");
 const router = express.Router();
 
 // PUBLIC
+// Get ALL products (with filters)
 router.route("/products").get(getAllProducts);
-router.route("/products/all").get(getProducts);
+
+// Get Slider products — different route name
+router.route("/products/slider").get(getSliderProducts);
+
+// Get Single Product
 router.route("/product/:id").get(getProductDetails);
+
 
 // ADMIN
 router.route("/admin/products")
