@@ -202,6 +202,28 @@ export const deleteReview = (reviewId, productId) => async (dispatch) => {
 
 
 
+export const getSliderProducts = () => async (dispatch) => {
+    try {
+        dispatch({ type: SLIDER_PRODUCTS_REQUEST });
+
+        const { data } = await API.get("/products/all");
+
+        dispatch({
+            type: SLIDER_PRODUCTS_SUCCESS,
+            payload: data.products,
+        });
+
+    } catch (error) {
+        dispatch({
+            type: SLIDER_PRODUCTS_FAIL,
+            payload: error.response?.data?.message || "Failed to load slider products",
+        });
+    }
+};
+
+
+
+
 // Clear Errors
 export const clearErrors = () => (dispatch) => {
     dispatch({ type: CLEAR_ERRORS });
