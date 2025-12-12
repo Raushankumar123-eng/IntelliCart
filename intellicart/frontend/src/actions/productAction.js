@@ -47,26 +47,19 @@ export const getProducts = (
     try {
         dispatch({ type: ALL_PRODUCTS_REQUEST });
 
-        // ✔ ALWAYS hit correct API
-        let link = `/products?page=${page}`;
+        // Build API query string for backend
+        const params = new URLSearchParams();
 
-        // keyword
-        if (keyword.trim()) {
-            link += `&keyword=${encodeURIComponent(keyword.trim())}`;
-        }
+        if (keyword.trim() !== "") params.set("keyword", keyword.trim());
+        if (category.trim() !== "") params.set("category", category.trim());
 
-        // category
-        if (category.trim()) {
-            link += `&category=${encodeURIComponent(category.trim())}`;
-        }
+        params.set("price[gte]", price[0]);
+        params.set("price[lte]", price[1]);
+        params.set("ratings[gte]", ratings);
+        params.set("page", page);
 
-        // price
-        link += `&price[gte]=${price[0]}&price[lte]=${price[1]}`;
-
-        // ratings
-        link += `&ratings[gte]=${ratings}`;
-
-        const { data } = await API.get(link);
+        // THIS is the real backend request
+        const { data } = await API.get(`/products?${params.toString()}`);
 
         dispatch({ type: ALL_PRODUCTS_SUCCESS, payload: data });
 

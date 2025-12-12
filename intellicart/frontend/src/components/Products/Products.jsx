@@ -19,22 +19,27 @@ import StarIcon from "@mui/icons-material/Star";
 import { categories } from "../../utils/constants";
 import MetaData from "../Layouts/MetaData";
 
+// ---------------------------
+// HELPER: Build Query String
+// ---------------------------
 const buildQueryString = (opts) => {
   const p = new URLSearchParams();
+
   if (opts.keyword) p.set("keyword", opts.keyword);
   if (opts.category) p.set("category", opts.category);
-  if (opts.price) {
-    p.set("price[gte]", String(opts.price[0]));
-    p.set("price[lte]", String(opts.price[1]));
-  } else {
-    p.set("price[gte]", "0");
-    p.set("price[lte]", "200000");
-  }
-  p.set("ratings[gte]", String(opts.ratings || 0));
-  p.set("page", String(opts.page || 1));
+
+  p.set("price[gte]", opts.price?.[0] ?? 0);
+  p.set("price[lte]", opts.price?.[1] ?? 200000);
+
+  p.set("ratings[gte]", opts.ratings ?? 0);
+  p.set("page", opts.page ?? 1);
+
   return p.toString();
 };
 
+// =============================
+//       MAIN COMPONENT
+// =============================
 const Products = () => {
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
@@ -43,15 +48,25 @@ const Products = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // read URL values directly
+  // ----------------------------------
+  // READ URL PARAMS (Single Truth)
+  // ----------------------------------
   const qp = new URLSearchParams(location.search);
-  const keywordFromURL = params.keyword ? decodeURIComponent(params.keyword) : qp.get("keyword") || "";
+
+  const keywordFromURL = params.keyword || qp.get("keyword") || "";
   const categoryFromURL = qp.get("category") || "";
-  const priceFromURL = [Number(qp.get("price[gte]") || 0), Number(qp.get("price[lte]") || 200000)];
+
+  const priceFromURL = [
+    Number(qp.get("price[gte]") || 0),
+    Number(qp.get("price[lte]") || 200000),
+  ];
+
   const ratingFromURL = Number(qp.get("ratings[gte]") || 0);
   const pageFromURL = Number(qp.get("page") || 1);
 
-  // state
+  // ------------------------
+  // LOCAL STATE
+  // ------------------------
   const [keyword] = useState(keywordFromURL);
   const [category, setCategory] = useState(categoryFromURL);
   const [price, setPrice] = useState(priceFromURL);
@@ -61,11 +76,19 @@ const Products = () => {
   const [categoryToggle, setCategoryToggle] = useState(true);
   const [ratingsToggle, setRatingsToggle] = useState(true);
 
-  const { products, loading, error, resultPerPage, filteredProductsCount } = useSelector((state) => state.products);
+  const {
+    products,
+    loading,
+    error,
+    resultPerPage,
+    filteredProductsCount,
+  } = useSelector((state) => state.products);
 
-  // helper to navigate with params
+  // ------------------------
+  // SYNC URL WITH STATE
+  // ------------------------
   const syncUrl = (overrides = {}) => {
-    const next = {
+    const params = {
       keyword,
       category,
       price,
@@ -73,11 +96,14 @@ const Products = () => {
       page: currentPage,
       ...overrides,
     };
-    const qs = buildQueryString(next);
+
+    const qs = buildQueryString(params);
     navigate(`/products?${qs}`);
   };
 
-  // handlers
+  // ------------------------
+  // FILTER HANDLERS
+  // ------------------------
   const priceHandler = (e, newPrice) => {
     setPrice(newPrice);
     setCurrentPage(1);
@@ -97,11 +123,13 @@ const Products = () => {
   };
 
   const clearFilters = () => {
+    navigate(
+      `/products?price[gte]=0&price[lte]=200000&ratings[gte]=0&page=1`
+    );
     setCategory("");
     setPrice([0, 200000]);
     setRatings(0);
     setCurrentPage(1);
-    navigate(`/products?price[gte]=0&price[lte]=200000&ratings[gte]=0&page=1`);
   };
 
   const setCurrentPageHandler = (val) => {
@@ -109,26 +137,30 @@ const Products = () => {
     syncUrl({ page: val });
   };
 
-  // fetch products when URL changes (so server sees exact params)
+  // ------------------------
+  // FETCH PRODUCTS
+  // ------------------------
   useEffect(() => {
     if (error) {
       enqueueSnackbar(error, { variant: "error" });
       dispatch(clearErrors());
     }
 
-    // read params again from URL (single source of truth)
     const qp2 = new URLSearchParams(location.search);
-    const cat = qp2.get("category") || "";
-    const page = Number(qp2.get("page") || 1);
-    const priceGte = Number(qp2.get("price[gte]") || 0);
-    const priceLte = Number(qp2.get("price[lte]") || 200000);
-    const r = Number(qp2.get("ratings[gte]") || 0);
-    const kw = qp2.get("keyword") || params.keyword || "";
 
-    dispatch(getProducts(kw, cat, [priceGte, priceLte], r, page));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const kw = qp2.get("keyword") || "";
+    const cat = qp2.get("category") || "";
+    const pg = Number(qp2.get("page") || 1);
+    const p1 = Number(qp2.get("price[gte]") || 0);
+    const p2 = Number(qp2.get("price[lte]") || 200000);
+    const r = Number(qp2.get("ratings[gte]") || 0);
+
+    dispatch(getProducts(kw, cat, [p1, p2], r, pg));
   }, [dispatch, location.search, error]);
 
+  // ------------------------
+  // RENDER UI
+  // ------------------------
   return (
     <>
       <MetaData title="All Products | IntelliCart" />
@@ -136,60 +168,116 @@ const Products = () => {
 
       <main className="w-full mt-14 sm:mt-0">
         <div className="flex gap-3 mt-2 sm:mx-3 mb-7">
-          {/* FILTER SECTION */}
+          {/* ===========================
+              FILTER SIDEBAR
+          ============================= */}
           <div className="hidden sm:flex flex-col w-1/5 px-1 bg-white shadow">
             <div className="flex items-center justify-between px-4 py-2 border-b">
               <p className="text-lg font-medium">Filters</p>
-              <span className="uppercase text-primary-blue text-xs cursor-pointer" onClick={clearFilters}>
+              <span
+                className="uppercase text-primary-blue text-xs cursor-pointer"
+                onClick={clearFilters}
+              >
                 clear all
               </span>
             </div>
 
             <div className="flex flex-col gap-2 py-3 text-sm">
-              {/* PRICE */}
+              {/* PRICE FILTER */}
               <div className="flex flex-col gap-2 border-b px-4">
                 <span className="font-medium text-xs">PRICE</span>
-                <Slider value={price} onChange={priceHandler} min={0} max={200000} valueLabelDisplay="auto" />
+
+                <Slider
+                  value={price}
+                  onChange={priceHandler}
+                  min={0}
+                  max={200000}
+                  valueLabelDisplay="auto"
+                />
+
                 <div className="flex gap-3 items-center justify-between mb-2">
-                  <span className="flex-1 border px-4 py-1 bg-gray-50">₹{price[0].toLocaleString()}</span>
+                  <span className="flex-1 border px-4 py-1 bg-gray-50">
+                    ₹{price[0].toLocaleString()}
+                  </span>
                   <span className="font-medium text-gray-400">to</span>
-                  <span className="flex-1 border px-4 py-1 bg-gray-50">₹{price[1].toLocaleString()}</span>
+                  <span className="flex-1 border px-4 py-1 bg-gray-50">
+                    ₹{price[1].toLocaleString()}
+                  </span>
                 </div>
               </div>
 
-              {/* CATEGORY */}
+              {/* CATEGORY FILTER */}
               <div className="flex flex-col border-b px-4">
-                <div className="flex justify-between cursor-pointer py-2" onClick={() => setCategoryToggle(!categoryToggle)}>
+                <div
+                  className="flex justify-between cursor-pointer py-2"
+                  onClick={() => setCategoryToggle(!categoryToggle)}
+                >
                   <p className="font-medium text-xs uppercase">Category</p>
                   {categoryToggle ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                 </div>
 
                 {categoryToggle && (
                   <FormControl>
-                    <RadioGroup value={category} onChange={(e) => onCategoryChange(e.target.value)}>
+                    <RadioGroup
+                      value={category}
+                      onChange={(e) => onCategoryChange(e.target.value)}
+                    >
                       {categories.map((el, i) => (
-                        <FormControlLabel key={i} value={el} control={<Radio size="small" />} label={<span className="text-sm">{el}</span>} />
+                        <FormControlLabel
+                          key={i}
+                          value={el}
+                          control={<Radio size="small" />}
+                          label={<span className="text-sm">{el}</span>}
+                        />
                       ))}
-                      <FormControlLabel value="" control={<Radio size="small" />} label="All" />
+
+                      <FormControlLabel
+                        value=""
+                        control={<Radio size="small" />}
+                        label="All"
+                      />
                     </RadioGroup>
                   </FormControl>
                 )}
               </div>
 
-              {/* RATINGS */}
+              {/* RATINGS FILTER */}
               <div className="flex flex-col border-b px-4">
-                <div className="flex justify-between cursor-pointer py-2" onClick={() => setRatingsToggle(!ratingsToggle)}>
+                <div
+                  className="flex justify-between cursor-pointer py-2"
+                  onClick={() => setRatingsToggle(!ratingsToggle)}
+                >
                   <p className="font-medium text-xs uppercase">Ratings</p>
                   {ratingsToggle ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                 </div>
 
                 {ratingsToggle && (
                   <FormControl>
-                    <RadioGroup value={String(ratings)} onChange={(e) => onRatingsChange(Number(e.target.value))}>
+                    <RadioGroup
+                      value={String(ratings)}
+                      onChange={(e) =>
+                        onRatingsChange(Number(e.target.value))
+                      }
+                    >
                       {[4, 3, 2, 1].map((el) => (
-                        <FormControlLabel key={el} value={String(el)} control={<Radio size="small" />} label={<span className="text-sm flex items-center">{el} <StarIcon sx={{ fontSize: 12 }} /> & above</span>} />
+                        <FormControlLabel
+                          key={el}
+                          value={String(el)}
+                          control={<Radio size="small" />}
+                          label={
+                            <span className="text-sm flex items-center">
+                              {el}{" "}
+                              <StarIcon sx={{ fontSize: 12 }} /> & above
+                            </span>
+                          }
+                        />
                       ))}
-                      <FormControlLabel value="0" control={<Radio size="small" />} label="All" />
+
+                      <FormControlLabel
+                        value="0"
+                        control={<Radio size="small" />}
+                        label="All"
+                      />
                     </RadioGroup>
                   </FormControl>
                 )}
@@ -197,7 +285,9 @@ const Products = () => {
             </div>
           </div>
 
-          {/* PRODUCT LIST */}
+          {/* ===========================
+              PRODUCT LIST
+          ============================= */}
           <div className="flex-1">
             {!loading && (!products || products.length === 0) ? (
               <div className="p-8 bg-white shadow text-center">
@@ -214,7 +304,16 @@ const Products = () => {
                 </div>
 
                 {filteredProductsCount > resultPerPage && (
-                  <Pagination page={currentPage} onChange={(e, value) => setCurrentPageHandler(value)} count={Math.ceil(filteredProductsCount / resultPerPage)} color="primary" />
+                  <Pagination
+                    page={currentPage}
+                    onChange={(e, value) =>
+                      setCurrentPageHandler(value)
+                    }
+                    count={Math.ceil(
+                      filteredProductsCount / resultPerPage
+                    )}
+                    color="primary"
+                  />
                 )}
               </div>
             )}
