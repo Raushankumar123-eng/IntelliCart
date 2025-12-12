@@ -6,20 +6,20 @@ class SearchFeatures {
   }
 
   // search by name keyword (case insensitive)
-  search() {
-    if (this.queryStr.keyword && this.queryStr.keyword.trim() !== "") {
-      const keyword = {
-        name: {
-          $regex: this.queryStr.keyword.trim(),
-          $options: "i",
-        },
-      };
-      this.query = this.query.find({ ...keyword });
-    } else {
-      this.query = this.query.find({});
-    }
+ search() {
+    const keyword = this.queryStr.keyword
+        ? {
+              $or: [
+                  { name: { $regex: this.queryStr.keyword, $options: "i" } },
+                  { category: { $regex: this.queryStr.keyword, $options: "i" } }
+              ]
+          }
+        : {};
+
+    this.query = this.query.find(keyword);
     return this;
-  }
+}
+
 
   // filter handles keys like:
   // category=Mobiles
