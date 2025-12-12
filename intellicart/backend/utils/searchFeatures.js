@@ -18,7 +18,6 @@ class SearchFeatures {
         return this;
     }
 
-
     filter() {
         const queryCopy = { ...this.queryStr };
 
@@ -32,20 +31,17 @@ class SearchFeatures {
         );
         queryString = JSON.parse(queryString);
 
-        // ⭐ Correct category filtering
-        if (this.queryStr.category && this.queryStr.category.trim() !== "") {
-            const rawCat = this.queryStr.category.trim();
-
+        // ⭐ FINAL — SIMPLE & CORRECT CATEGORY FILTER
+        if (this.queryStr.category) {
             queryString.category = {
-                $regex: `^${rawCat}$`,
-                $options: "i", // case-insensitive
+                $regex: this.queryStr.category,
+                $options: "i"
             };
         }
 
         this.query = this.query.find(queryString);
         return this;
     }
-
 
     pagination(resultPerPage) {
         const currentPage = Number(this.queryStr.page) || 1;
