@@ -41,6 +41,9 @@ import {
     SIMILAR_PRODUCTS_FAIL,
 } from "../constants/productConstants";
 
+// =======================
+// PRODUCTS REDUCER
+// =======================
 export const productsReducer = (state = { products: [] }, action) => {
     const { type, payload } = action;
 
@@ -63,7 +66,7 @@ export const productsReducer = (state = { products: [] }, action) => {
                 filteredProductsCount: payload.filteredProductsCount,
             };
 
-        // ✅ FIX: Admin products must use payload.products
+        // ADMIN products always return full list
         case ADMIN_PRODUCTS_SUCCESS:
             return {
                 loading: false,
@@ -77,7 +80,6 @@ export const productsReducer = (state = { products: [] }, action) => {
                 products: payload,
             };
 
-        // ❌ FIXED wrong "ALL_PRODUCTS_FAIL:a"
         case ALL_PRODUCTS_FAIL:
         case ADMIN_PRODUCTS_FAIL:
         case SLIDER_PRODUCTS_FAIL:
@@ -88,23 +90,164 @@ export const productsReducer = (state = { products: [] }, action) => {
             };
 
         case CLEAR_ERRORS:
-            return {
-                ...state,
-                error: null,
-            };
+            return { ...state, error: null };
 
         default:
             return state;
     }
 };
 
+// =======================
+// PRODUCT DETAILS REDUCER
+// =======================
+export const productDetailsReducer = (state = { product: {} }, action) => {
+    switch (action.type) {
+        case PRODUCT_DETAILS_REQUEST:
+            return { ...state, loading: true };
 
-export {
-    productsReducer,
-    productDetailsReducer,
-    newReviewReducer,
-    newProductReducer,
-    productReducer,
-    productReviewsReducer,
-    reviewReducer
+        case PRODUCT_DETAILS_SUCCESS:
+            return { loading: false, product: action.payload };
+
+        case PRODUCT_DETAILS_FAIL:
+            return { loading: false, error: action.payload };
+
+        case REMOVE_PRODUCT_DETAILS:
+            return { ...state, product: {} };
+
+        case CLEAR_ERRORS:
+            return { ...state, error: null };
+
+        default:
+            return state;
+    }
+};
+
+// =======================
+// NEW REVIEW
+// =======================
+export const newReviewReducer = (state = {}, action) => {
+    switch (action.type) {
+        case NEW_REVIEW_REQUEST:
+            return { ...state, loading: true };
+
+        case NEW_REVIEW_SUCCESS:
+            return { loading: false, success: action.payload };
+
+        case NEW_REVIEW_FAIL:
+            return { loading: false, error: action.payload };
+
+        case NEW_REVIEW_RESET:
+            return { ...state, success: false };
+
+        case CLEAR_ERRORS:
+            return { ...state, error: null };
+
+        default:
+            return state;
+    }
+};
+
+// =======================
+// NEW PRODUCT
+// =======================
+export const newProductReducer = (state = { product: {} }, action) => {
+    switch (action.type) {
+        case NEW_PRODUCT_REQUEST:
+            return { ...state, loading: true };
+
+        case NEW_PRODUCT_SUCCESS:
+            return { loading: false, success: action.payload.success, product: action.payload.product };
+
+        case NEW_PRODUCT_FAIL:
+            return { loading: false, error: action.payload };
+
+        case NEW_PRODUCT_RESET:
+            return { ...state, success: false };
+
+        case CLEAR_ERRORS:
+            return { ...state, error: null };
+
+        default:
+            return state;
+    }
+};
+
+// =======================
+// UPDATE / DELETE PRODUCT
+// =======================
+export const productReducer = (state = {}, action) => {
+    switch (action.type) {
+        case UPDATE_PRODUCT_REQUEST:
+        case DELETE_PRODUCT_REQUEST:
+            return { ...state, loading: true };
+
+        case UPDATE_PRODUCT_SUCCESS:
+            return { loading: false, isUpdated: action.payload };
+
+        case DELETE_PRODUCT_SUCCESS:
+            return { loading: false, isDeleted: action.payload };
+
+        case UPDATE_PRODUCT_FAIL:
+        case DELETE_PRODUCT_FAIL:
+            return { loading: false, error: action.payload };
+
+        case UPDATE_PRODUCT_RESET:
+            return { ...state, isUpdated: false };
+
+        case DELETE_PRODUCT_RESET:
+            return { ...state, isDeleted: false };
+
+        case CLEAR_ERRORS:
+            return { ...state, error: null };
+
+        default:
+            return state;
+    }
+};
+
+// =======================
+// PRODUCT REVIEWS
+// =======================
+export const productReviewsReducer = (state = { reviews: [] }, action) => {
+    switch (action.type) {
+        case ALL_REVIEWS_REQUEST:
+            return { loading: true };
+
+        case ALL_REVIEWS_SUCCESS:
+            return { loading: false, reviews: action.payload };
+
+        case ALL_REVIEWS_FAIL:
+            return { loading: false, error: action.payload };
+
+        case CLEAR_ERRORS:
+            return { ...state, error: null };
+
+        default:
+            return state;
+    }
+};
+
+// =======================
+// DELETE REVIEW
+// =======================
+export const reviewReducer = (state = {}, action) => {
+    switch (action.type) {
+        case DELETE_REVIEW_REQUEST:
+            return { loading: true };
+
+        case DELETE_REVIEW_SUCCESS:
+            return { loading: false, isDeleted: action.payload };
+
+        case DELETE_REVIEW_FAIL:
+            return { loading: false, error: action.payload };
+
+        case DELETE_REVIEW_RESET:
+            return { ...state, isDeleted: false };
+
+        case CLEAR_ERRORS:
+            return { ...state, error: null };
+
+        default:
+            return state;
+    }
 };
