@@ -8,6 +8,10 @@ const cloudinary = require("cloudinary");
 // GET ALL PRODUCTS (User)
 // ==========================
 exports.getAllProducts = asyncErrorHandler(async (req, res, next) => {
+
+   console.log("====================================");
+    console.log("🌐 REQUEST QUERY RECEIVED:", req.query);
+    console.log("====================================");
   const resultPerPage = 12;
 
   const searchFeature = new SearchFeatures(Product.find(), req.query)
@@ -35,6 +39,8 @@ exports.getAllProducts = asyncErrorHandler(async (req, res, next) => {
 // PRODUCT SLIDER
 // ==========================
 exports.getProducts = asyncErrorHandler(async (req, res, next) => {
+
+  
   const products = await Product.find();
   res.status(200).json({ success: true, products });
 });

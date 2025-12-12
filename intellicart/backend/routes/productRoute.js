@@ -19,7 +19,12 @@ const router = express.Router();
 
 // PUBLIC
 // Get ALL products (with filters)
-router.route("/products").get(getAllProducts);
+router.get("/products", (req, res, next) => {
+    console.log("🔥 ROUTE HIT: /products");
+    console.log("📩 Incoming Query Params:", req.query);
+    next();
+}, getAllProducts);
+
 
 // Get Slider products — different route name
 router.route("/products/slider").get(getSliderProducts);

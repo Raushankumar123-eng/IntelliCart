@@ -20,52 +20,47 @@ class SearchFeatures {
     }
 
     // 🎯 FILTER (category + price + ratings)
-    filter() {
-        const queryCopy = { ...this.queryStr };
+filter() {
+    const queryCopy = { ...this.queryStr };
 
-        // remove unwanted fields
-        const removeFields = ["keyword", "page", "limit"];
-        removeFields.forEach((key) => delete queryCopy[key]);
+    console.log("🔥 RAW QUERY STRING:", this.queryStr);
 
-        // Convert gt, gte etc.
-        let queryString = JSON.stringify(queryCopy);
-        queryString = queryString.replace(
-            /\b(gt|gte|lt|lte)\b/g,
-            (key) => `$${key}`
-        );
-        queryString = JSON.parse(queryString);
+    const removeFields = ["keyword", "page", "limit"];
+    removeFields.forEach((key) => delete queryCopy[key]);
 
-        // ⭐ CATEGORY FILTER (ALWAYS WORKS)
-        if (this.queryStr.category) {
-            queryString.category = {
-                $regex: `^${this.queryStr.category}$`,
-                $options: "i",
-            };
-        }
+    console.log("🧹 CLEANED QUERY COPY:", queryCopy);
 
-        // ⭐ PRICE FILTER FIX
-        if (this.queryStr["price[gte]"] || this.queryStr["price[lte]"]) {
-            queryString.price = {};
+    let queryString = JSON.stringify(queryCopy);
+    queryString = queryString.replace(
+        /\b(gt|gte|lt|lte)\b/g,
+        (key) => `$${key}`
+    );
+    queryString = JSON.parse(queryString);
 
-            if (this.queryStr["price[gte]"]) {
-                queryString.price.$gte = Number(this.queryStr["price[gte]"]);
-            }
+    console.log("🧩 QUERY AFTER OPERATORS REPLACED:", queryString);
 
-            if (this.queryStr["price[lte]"]) {
-                queryString.price.$lte = Number(this.queryStr["price[lte]"]);
-            }
-        }
+    // ⭐ CATEGORY FILTER DEBUGGING
+    if (this.queryStr.category) {
 
-        // ⭐ RATINGS FILTER FIX
-        if (this.queryStr["ratings[gte]"]) {
-            queryString.ratings = {
-                $gte: Number(this.queryStr["ratings[gte]"]),
-            };
-        }
+        console.log("📌 CATEGORY RECEIVED IN BACKEND:", this.queryStr.category);
 
-        this.query = this.query.find(queryString);
-        return this;
+        queryString.category = {
+            $regex: this.queryStr.category,
+            $options: "i"
+        };
+
+        console.log("🔍 CATEGORY REGEX APPLIED:", queryString.category);
+    } else {
+        console.log("⚠️ NO CATEGORY RECEIVED IN QUERY STRING");
     }
+
+    // 🔥 FINAL QUERY GOING TO MONGO
+    console.log("🚀 FINAL MONGO QUERY:", queryString);
+
+    this.query = this.query.find(queryString);
+    return this;
+}
+
 
     // 📄 PAGINATION
     pagination(resultPerPage) {
