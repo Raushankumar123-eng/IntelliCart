@@ -47,8 +47,24 @@ export const getProducts = (
     try {
         dispatch({ type: ALL_PRODUCTS_REQUEST });
 
-        let link = `/products?keyword=${encodeURIComponent(keyword)}&page=${page}&price[gte]=${price[0]}&price[lte]=${price[1]}&ratings[gte]=${ratings}`;
-        if (category) link += `&category=${encodeURIComponent(category)}`;
+        // Base URL without keyword
+        let link = `/products?page=${page}`;
+
+        // keyword only if it actually exists
+        if (keyword && keyword.trim() !== "") {
+            link += `&keyword=${encodeURIComponent(keyword.trim())}`;
+        }
+
+        // category independent filter
+        if (category && category.trim() !== "") {
+            link += `&category=${encodeURIComponent(category.trim())}`;
+        }
+
+        // Price filter
+        link += `&price[gte]=${price[0]}&price[lte]=${price[1]}`;
+
+        // Ratings filter
+        link += `&ratings[gte]=${ratings}`;
 
         const { data } = await API.get(link);
 
@@ -61,6 +77,7 @@ export const getProducts = (
         });
     }
 };
+
 
 // Product Details
 export const getProductDetails = (id) => async (dispatch) => {
