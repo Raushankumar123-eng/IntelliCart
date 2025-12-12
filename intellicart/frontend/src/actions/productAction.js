@@ -222,6 +222,27 @@ export const getSliderProducts = () => async (dispatch) => {
 };
 
 
+// NEW REVIEW
+export const newReview = (reviewData) => async (dispatch) => {
+    try {
+        dispatch({ type: NEW_REVIEW_REQUEST });
+
+        const { data } = await API.put(`/review`, reviewData);
+
+        dispatch({
+            type: NEW_REVIEW_SUCCESS,
+            payload: data.success,
+        });
+
+    } catch (error) {
+        dispatch({
+            type: NEW_REVIEW_FAIL,
+            payload: error.response?.data?.message || "Failed to post review",
+        });
+    }
+};
+
+
 
 
 // Clear Errors
