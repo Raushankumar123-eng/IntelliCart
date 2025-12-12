@@ -39,6 +39,7 @@ import {
     SIMILAR_PRODUCTS_REQUEST,
     SIMILAR_PRODUCTS_SUCCESS,
     SIMILAR_PRODUCTS_FAIL,
+    adminProductsReducer,
 } from "../constants/productConstants";
 
 // =======================
@@ -243,6 +244,27 @@ export const reviewReducer = (state = {}, action) => {
 
         case DELETE_REVIEW_RESET:
             return { ...state, isDeleted: false };
+
+        case CLEAR_ERRORS:
+            return { ...state, error: null };
+
+        default:
+            return state;
+    }
+};
+
+
+
+export const adminProductsReducer = (state = { products: [] }, action) => {
+    switch (action.type) {
+        case ADMIN_PRODUCTS_REQUEST:
+            return { loading: true, products: [] };
+
+        case ADMIN_PRODUCTS_SUCCESS:
+            return { loading: false, products: action.payload.products };
+
+        case ADMIN_PRODUCTS_FAIL:
+            return { loading: false, error: action.payload };
 
         case CLEAR_ERRORS:
             return { ...state, error: null };

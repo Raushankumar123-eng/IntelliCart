@@ -16,8 +16,8 @@ const ProductTable = () => {
     const { enqueueSnackbar } = useSnackbar();
 
     // ✅ FIX: Correct reducer slice
-    const { products, error, loading } = useSelector((state) => state.products);
-    const { isDeleted, error: deleteError } = useSelector((state) => state.product);
+    const { products, error, loading } = useSelector((state) => state.getAdminProducts);
+    const { isDeleted, error: deleteError } = useSelector((state) => state.deleteProduct);
 
     useEffect(() => {
         if (error) {
