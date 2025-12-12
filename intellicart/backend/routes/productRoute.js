@@ -34,7 +34,7 @@ router.route("/admin/product/:id")
 
 // REVIEWS
 router.route("/reviews")
-  .get(isAuthenticatedUser, getProductReviews)
+  .get(isAuthenticatedUser, getProductReviews)   
   .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteReview);
 
 router.route("/review")
