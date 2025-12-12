@@ -47,32 +47,28 @@ export const getProducts = (
     try {
         dispatch({ type: ALL_PRODUCTS_REQUEST });
 
-        // ⭐ Correct Endpoint
-        let link = `/products/all?page=${page}`;
+        // ✔ ALWAYS hit correct API
+        let link = `/products?page=${page}`;
 
-        // keyword only if present
-        if (keyword && keyword.trim() !== "") {
+        // keyword
+        if (keyword.trim()) {
             link += `&keyword=${encodeURIComponent(keyword.trim())}`;
         }
 
-        // category filter
-        if (category && category.trim() !== "") {
+        // category
+        if (category.trim()) {
             link += `&category=${encodeURIComponent(category.trim())}`;
         }
 
-        // price filter
+        // price
         link += `&price[gte]=${price[0]}&price[lte]=${price[1]}`;
 
-        // ratings filter
+        // ratings
         link += `&ratings[gte]=${ratings}`;
 
-        // call API
         const { data } = await API.get(link);
 
-        dispatch({
-            type: ALL_PRODUCTS_SUCCESS,
-            payload: data,
-        });
+        dispatch({ type: ALL_PRODUCTS_SUCCESS, payload: data });
 
     } catch (error) {
         dispatch({
