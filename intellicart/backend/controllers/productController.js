@@ -186,3 +186,20 @@ exports.createProductReview = asyncErrorHandler(async (req, res, next) => {
     res.status(200).json({ success: true });
 });
 
+
+
+
+
+exports.getAllReviews = asyncErrorHandler(async (req, res, next) => {
+    const product = await Product.findById(req.query.id);
+
+    if (!product)
+        return next(new ErrorHandler("Product Not Found", 404));
+
+    res.status(200).json({
+        success: true,
+        reviews: product.reviews,
+    });
+});
+
+
