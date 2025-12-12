@@ -3,7 +3,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
 import { Link } from 'react-router-dom';
-import { clearErrors, deleteProduct, getProducts } from '../../actions/productAction';
+import { clearErrors, deleteProduct, getAdminProducts } from '../../actions/productAction';
 import Rating from '@mui/material/Rating';
 import { DELETE_PRODUCT_RESET } from '../../constants/productConstants';
 import Actions from './Actions';
@@ -15,7 +15,7 @@ const ProductTable = () => {
     const dispatch = useDispatch();
     const { enqueueSnackbar } = useSnackbar();
 
-    const { products, error } = useSelector((state) => state.products);
+    const { products, error } = useSelector((state) => state.adminProducts || { products: [] });
     const { loading, isDeleted, error: deleteError } = useSelector((state) => state.product);
 
     useEffect(() => {
@@ -31,7 +31,9 @@ const ProductTable = () => {
             enqueueSnackbar("Product Deleted Successfully", { variant: "success" });
             dispatch({ type: DELETE_PRODUCT_RESET });
         }
-        dispatch(getProducts()); // 👈 Updated here
+
+        // 🔥 FIX: ADMIN SHOULD LOAD ALL PRODUCTS
+        dispatch(getAdminProducts());
     }, [dispatch, error, deleteError, isDeleted, enqueueSnackbar]);
 
     const deleteProductHandler = (id) => {
