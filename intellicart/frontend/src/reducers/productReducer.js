@@ -63,7 +63,13 @@ export const productsReducer = (state = { products: [] }, action) => {
                 filteredProductsCount: payload.filteredProductsCount,
             };
 
+        // ✅ FIX: Admin products must use payload.products
         case ADMIN_PRODUCTS_SUCCESS:
+            return {
+                loading: false,
+                products: payload.products,
+            };
+
         case SLIDER_PRODUCTS_SUCCESS:
         case SIMILAR_PRODUCTS_SUCCESS:
             return {
@@ -71,6 +77,7 @@ export const productsReducer = (state = { products: [] }, action) => {
                 products: payload,
             };
 
+        // ❌ FIXED wrong "ALL_PRODUCTS_FAIL:a"
         case ALL_PRODUCTS_FAIL:
         case ADMIN_PRODUCTS_FAIL:
         case SLIDER_PRODUCTS_FAIL:
@@ -85,155 +92,6 @@ export const productsReducer = (state = { products: [] }, action) => {
                 ...state,
                 error: null,
             };
-
-        default:
-            return state;
-    }
-};
-
-export const productDetailsReducer = (state = { product: {} }, action) => {
-    const { type, payload } = action;
-
-    switch (type) {
-        case PRODUCT_DETAILS_REQUEST:
-            return { ...state, loading: true };
-
-        case PRODUCT_DETAILS_SUCCESS:
-            return { loading: false, product: payload };
-
-        case PRODUCT_DETAILS_FAIL:
-            return { loading: false, error: payload };
-
-        case REMOVE_PRODUCT_DETAILS:
-            return { ...state, product: {} };
-
-        case CLEAR_ERRORS:
-            return { ...state, error: null };
-
-        default:
-            return state;
-    }
-};
-
-export const newReviewReducer = (state = {}, action) => {
-    const { type, payload } = action;
-
-    switch (type) {
-        case NEW_REVIEW_REQUEST:
-            return { ...state, loading: true };
-
-        case NEW_REVIEW_SUCCESS:
-            return { loading: false, success: payload };
-
-        case NEW_REVIEW_FAIL:
-            return { ...state, loading: false, error: payload };
-
-        case NEW_REVIEW_RESET:
-            return { ...state, success: false };
-
-        case CLEAR_ERRORS:
-            return { ...state, error: null };
-
-        default:
-            return state;
-    }
-};
-
-export const newProductReducer = (state = { product: {} }, action) => {
-    const { type, payload } = action;
-
-    switch (type) {
-        case NEW_PRODUCT_REQUEST:
-            return { ...state, loading: true };
-
-        case NEW_PRODUCT_SUCCESS:
-            return { loading: false, success: payload.success, product: payload.product };
-
-        case NEW_PRODUCT_FAIL:
-            return { ...state, loading: false, error: payload };
-
-        case NEW_PRODUCT_RESET:
-            return { ...state, success: false };
-
-        case CLEAR_ERRORS:
-            return { ...state, error: null };
-
-        default:
-            return state;
-    }
-};
-
-export const productReducer = (state = {}, action) => {
-    const { type, payload } = action;
-
-    switch (type) {
-        case UPDATE_PRODUCT_REQUEST:
-        case DELETE_PRODUCT_REQUEST:
-            return { ...state, loading: true };
-
-        case UPDATE_PRODUCT_SUCCESS:
-            return { ...state, loading: false, isUpdated: payload };
-
-        case DELETE_PRODUCT_SUCCESS:
-            return { ...state, loading: false, isDeleted: payload };
-
-        case UPDATE_PRODUCT_FAIL:
-        case DELETE_PRODUCT_FAIL:
-            return { ...state, loading: false, error: payload };
-
-        case UPDATE_PRODUCT_RESET:
-            return { ...state, isUpdated: false };
-
-        case DELETE_PRODUCT_RESET:
-            return { ...state, isDeleted: false };
-
-        case CLEAR_ERRORS:
-            return { ...state, error: null };
-
-        default:
-            return state;
-    }
-};
-
-export const productReviewsReducer = (state = { reviews: [] }, action) => {
-    const { type, payload } = action;
-
-    switch (type) {
-        case ALL_REVIEWS_REQUEST:
-            return { ...state, loading: true };
-
-        case ALL_REVIEWS_SUCCESS:
-            return { loading: false, reviews: payload };
-
-        case ALL_REVIEWS_FAIL:
-            return { ...state, loading: false, error: payload };
-
-        case CLEAR_ERRORS:
-            return { ...state, error: null };
-
-        default:
-            return state;
-    }
-};
-
-export const reviewReducer = (state = {}, action) => {
-    const { type, payload } = action;
-
-    switch (type) {
-        case DELETE_REVIEW_REQUEST:
-            return { ...state, loading: true };
-
-        case DELETE_REVIEW_SUCCESS:
-            return { loading: false, isDeleted: payload };
-
-        case DELETE_REVIEW_FAIL:
-            return { ...state, loading: false, error: payload };
-
-        case DELETE_REVIEW_RESET:
-            return { ...state, isDeleted: false };
-
-        case CLEAR_ERRORS:
-            return { ...state, error: null };
 
         default:
             return state;

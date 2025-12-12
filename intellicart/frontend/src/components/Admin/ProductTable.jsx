@@ -15,8 +15,9 @@ const ProductTable = () => {
     const dispatch = useDispatch();
     const { enqueueSnackbar } = useSnackbar();
 
-    const { products, error } = useSelector((state) => state.adminProducts || { products: [] });
-    const { loading, isDeleted, error: deleteError } = useSelector((state) => state.product);
+    // ✅ FIX: Correct reducer slice
+    const { products, error, loading } = useSelector((state) => state.products);
+    const { isDeleted, error: deleteError } = useSelector((state) => state.product);
 
     useEffect(() => {
         if (error) {
@@ -32,8 +33,7 @@ const ProductTable = () => {
             dispatch({ type: DELETE_PRODUCT_RESET });
         }
 
-        // 🔥 FIX: ADMIN SHOULD LOAD ALL PRODUCTS
-        dispatch(getAdminProducts());
+        dispatch(getAdminProducts());   // admin should load all products
     }, [dispatch, error, deleteError, isDeleted, enqueueSnackbar]);
 
     const deleteProductHandler = (id) => {
@@ -131,6 +131,7 @@ const ProductTable = () => {
                 <h1 className="text-lg font-medium uppercase">products</h1>
                 <Link to="/admin/new_product" className="py-2 px-4 rounded shadow font-medium text-white bg-primary-blue hover:shadow-lg">New Product</Link>
             </div>
+
             <div className="bg-white rounded-xl shadow-lg w-full" style={{ height: 470 }}>
                 <DataGrid
                     rows={rows}

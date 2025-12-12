@@ -112,7 +112,7 @@ export const getAdminProducts = () => async (dispatch) => {
     } catch (error) {
         dispatch({
             type: ADMIN_PRODUCTS_FAIL,
-            payload: error.response?.data?.message || "Failed to load admin products",
+            payload: error.response.data.message,
         });
     }
 };
