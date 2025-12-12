@@ -160,14 +160,46 @@ export const getSimilarProducts = (category) => async (dispatch) => {
 
 export const getAllReviews = (productId) => async (dispatch) => {
     try {
+        dispatch({ type: ALL_REVIEWS_REQUEST });
+
         const { data } = await API.get(`/reviews?id=${productId}`);
 
-        return data.reviews;
+        dispatch({
+            type: ALL_REVIEWS_SUCCESS,
+            payload: data.reviews,
+        });
 
     } catch (error) {
-        console.error("Fetch reviews failed:", error);
+        dispatch({
+            type: ALL_REVIEWS_FAIL,
+            payload: error.response?.data?.message || "Failed to load reviews",
+        });
     }
 };
+
+
+
+
+export const deleteReview = (reviewId, productId) => async (dispatch) => {
+    try {
+        dispatch({ type: DELETE_REVIEW_REQUEST });
+
+        const { data } = await API.delete(`/reviews?id=${reviewId}&productId=${productId}`);
+
+        dispatch({
+            type: DELETE_REVIEW_SUCCESS,
+            payload: data.success,
+        });
+
+    } catch (error) {
+        dispatch({
+            type: DELETE_REVIEW_FAIL,
+            payload: error.response?.data?.message || "Failed to delete review",
+        });
+    }
+};
+
+
 
 
 // Clear Errors

@@ -70,14 +70,6 @@ exports.updateProduct = asyncErrorHandler(async (req, res, next) => {
     res.status(200).json({ success: true, product });
 });
 
-// Admin — Delete Product
-exports.deleteProduct = asyncErrorHandler(async (req, res, next) => {
-    const product = await Product.findById(req.params.id);
-    if (!product) return next(new ErrorHandler("Product Not Found", 404));
-
-    await product.deleteOne();
-    res.status(200).json({ success: true, message: "Product Deleted" });
-});
 
 
 // Delete Review
