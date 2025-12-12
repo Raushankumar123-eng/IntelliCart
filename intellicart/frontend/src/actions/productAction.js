@@ -224,22 +224,23 @@ export const deleteReview = (reviewId, productId) => async (dispatch) => {
 
 export const getSliderProducts = () => async (dispatch) => {
     try {
-        dispatch({ type: SLIDER_PRODUCTS_REQUEST });
+        dispatch({ type: "SLIDER_PRODUCTS_REQUEST" });
 
-        const { data } = await API.get("/products/all");
+        const { data } = await API.get("/products/slider");
 
         dispatch({
-            type: SLIDER_PRODUCTS_SUCCESS,
-            payload: data.products,
+            type: "SLIDER_PRODUCTS_SUCCESS",
+            payload: data.products
         });
 
     } catch (error) {
         dispatch({
-            type: SLIDER_PRODUCTS_FAIL,
-            payload: error.response?.data?.message || "Failed to load slider products",
+            type: "SLIDER_PRODUCTS_FAIL",
+            payload: error.response?.data?.message || "Failed to load slider products"
         });
     }
 };
+
 
 
 // NEW REVIEW
