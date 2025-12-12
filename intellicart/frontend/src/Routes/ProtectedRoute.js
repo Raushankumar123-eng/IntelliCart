@@ -1,17 +1,50 @@
-import { useSelector } from 'react-redux';
-import { Navigate } from 'react-router-dom';
+const express = require("express");
+const {
+  getAllProducts,
+  getProducts,
+  getProductDetails,
+  getAdminProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getAllReviews,
+  getProductReviews,
+  deleteReview,
+  createProductReview,
+} = require("../controllers/productController");
 
-const ProtectedRoute = ({ children, isAdmin }) => {
+const { isAuthenticatedUser, authorizeRoles } = require("../middlewares/auth");
 
-    const { loading, isAuthenticated, user } = useSelector(state => state.user);
+const router = express.Router();
 
-    return (
-        <>
-            {loading === false && (
-                isAuthenticated === false ? <Navigate to="/login" /> : isAdmin ? user.role !== "admin" ? <Navigate to="/login" /> : children : children
-            )}
-        </>
-    );
-};
+// Public Routes
+router.route("/products").get(getAllProducts);
+router.route("/products/all").get(getProducts);
+router.route("/product/:id").get(getProductDetails);
 
-export default ProtectedRoute;
+// Admin Routes
+router
+  .route("/admin/products")
+  .get(isAuthenticatedUser, authorizeRoles("admin"), getAdminProducts);
+
+router
+  .route("/admin/product/new")
+  .post(isAuthenticatedUser, authorizeRoles("admin"), createProduct);
+
+router
+  .route("/admin/product/:id")
+  .put(isAuthenticatedUser, authorizeRoles("admin"), updateProduct)
+  .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteProduct);
+
+// ⭐ GET ALL REVIEWS OF A PRODUCT
+router
+  .route("/reviews")
+  .get(isAuthenticatedUser, getAllReviews)      // <--- This one stays
+  .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteReview);
+
+// ⭐ ADD OR UPDATE REVIEW
+router
+  .route("/review")
+  .put(isAuthenticatedUser, createProductReview);
+
+module.exports = router;

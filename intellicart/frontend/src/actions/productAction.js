@@ -155,6 +155,21 @@ export const getSimilarProducts = (category) => async (dispatch) => {
     }
 };
 
+
+
+
+export const getAllReviews = (productId) => async (dispatch) => {
+    try {
+        const { data } = await API.get(`/reviews?id=${productId}`);
+
+        return data.reviews;
+
+    } catch (error) {
+        console.error("Fetch reviews failed:", error);
+    }
+};
+
+
 // Clear Errors
 export const clearErrors = () => (dispatch) => {
     dispatch({ type: CLEAR_ERRORS });
