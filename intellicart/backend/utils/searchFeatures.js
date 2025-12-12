@@ -1,75 +1,97 @@
+// backend/utils/searchFeatures.js
 class SearchFeatures {
-    constructor(query, queryStr) {
-        this.query = query;
-        this.queryStr = queryStr;
+  constructor(query, queryStr) {
+    this.query = query;
+    this.queryStr = queryStr || {};
+  }
+
+  // search by name keyword (case insensitive)
+  search() {
+    if (this.queryStr.keyword && this.queryStr.keyword.trim() !== "") {
+      const keyword = {
+        name: {
+          $regex: this.queryStr.keyword.trim(),
+          $options: "i",
+        },
+      };
+      this.query = this.query.find({ ...keyword });
+    } else {
+      this.query = this.query.find({});
     }
+    return this;
+  }
 
-    // 🔍 SEARCH BY KEYWORD
-    search() {
-        const keyword = this.queryStr.keyword
-            ? {
-                  name: {
-                      $regex: this.queryStr.keyword.trim(),
-                      $options: "i",
-                  },
-              }
-            : {};
-
-        this.query = this.query.find({ ...keyword });
-        return this;
-    }
-
-    // 🎯 FILTER (category + price + ratings)
-filter() {
+  // filter handles keys like:
+  // category=Mobiles
+  // price[gte]=1000
+  // ratings[gte]=4
+  filter() {
+    // shallow copy of query params
     const queryCopy = { ...this.queryStr };
 
-    console.log("🔥 RAW QUERY STRING:", this.queryStr);
-
+    // remove control params
     const removeFields = ["keyword", "page", "limit"];
-    removeFields.forEach((key) => delete queryCopy[key]);
+    removeFields.forEach((f) => delete queryCopy[f]);
 
-    console.log("🧹 CLEANED QUERY COPY:", queryCopy);
+    // Build new filter object, converting bracket params to mongo operators
+    const filterObj = {};
 
-    let queryString = JSON.stringify(queryCopy);
-    queryString = queryString.replace(
-        /\b(gt|gte|lt|lte)\b/g,
-        (key) => `$${key}`
-    );
-    queryString = JSON.parse(queryString);
+    for (const rawKey of Object.keys(queryCopy)) {
+      const value = queryCopy[rawKey];
 
-    console.log("🧩 QUERY AFTER OPERATORS REPLACED:", queryString);
+      // If key like price[gte]
+      const bracketMatch = rawKey.match(/^([^\[]+)\[([^\]]+)\]$/);
+      if (bracketMatch) {
+        const root = bracketMatch[1]; // e.g. "price"
+        const op = bracketMatch[2]; // e.g. "gte"
 
-    // ⭐ CATEGORY FILTER DEBUGGING
-    if (this.queryStr.category) {
+        if (!filterObj[root]) filterObj[root] = {};
 
-        console.log("📌 CATEGORY RECEIVED IN BACKEND:", this.queryStr.category);
-
-        queryString.category = {
-            $regex: this.queryStr.category,
-            $options: "i"
-        };
-
-        console.log("🔍 CATEGORY REGEX APPLIED:", queryString.category);
-    } else {
-        console.log("⚠️ NO CATEGORY RECEIVED IN QUERY STRING");
+        // convert to numeric if possible
+        const parsed = this._tryParseNumber(value);
+        filterObj[root][`$${op}`] = parsed;
+      } else {
+        // normal key, e.g. category, brand, stock, etc.
+        // For category use regex match (case-insensitive)
+        if (rawKey === "category") {
+          if (String(value).trim() !== "") {
+            filterObj.category = {
+              $regex: String(value).trim(),
+              $options: "i",
+            };
+          }
+        } else {
+          // numeric cast when appropriate
+          filterObj[rawKey] = this._tryParseNumber(value);
+        }
+      }
     }
 
-    // 🔥 FINAL QUERY GOING TO MONGO
-    console.log("🚀 FINAL MONGO QUERY:", queryString);
-
-    this.query = this.query.find(queryString);
+    // apply final filter object to query
+    this.query = this.query.find(filterObj);
     return this;
-}
+  }
 
+  // pagination
+  pagination(resultPerPage = 12) {
+    const currentPage = Number(this.queryStr.page) || 1;
+    const skip = resultPerPage * (currentPage - 1);
 
-    // 📄 PAGINATION
-    pagination(resultPerPage) {
-        const currentPage = Number(this.queryStr.page) || 1;
-        const skip = resultPerPage * (currentPage - 1);
+    this.query = this.query.limit(resultPerPage).skip(skip);
+    return this;
+  }
 
-        this.query = this.query.limit(resultPerPage).skip(skip);
-        return this;
+  // helper to convert numeric strings to numbers when possible
+  _tryParseNumber(value) {
+    if (value === null || value === undefined) return value;
+    const s = String(value).trim();
+    if (s === "") return s;
+    if (!isNaN(s) && s !== "") {
+      // if integer-like or float-like convert
+      return s.includes(".") ? parseFloat(s) : parseInt(s, 10);
     }
+    return value;
+  }
 }
 
 module.exports = SearchFeatures;

@@ -1,30 +1,33 @@
+// backend/controllers/productController.js
 const Product = require("../models/productModel");
 const asyncErrorHandler = require("../middlewares/asyncErrorHandler");
 const SearchFeatures = require("../utils/searchFeatures");
 const ErrorHandler = require("../utils/errorHandler");
-const cloudinary = require("cloudinary");
 
 // ==========================
 // GET ALL PRODUCTS (User)
+// - returns paginated products based on query params
+// - returns total productsCount (global) and filteredProductsCount (before pagination)
 // ==========================
 exports.getAllProducts = asyncErrorHandler(async (req, res, next) => {
+  // Debug: remove if you want
+  // console.log("Incoming Query Params:", req.query);
 
-   console.log("====================================");
-    console.log("🌐 REQUEST QUERY RECEIVED:", req.query);
-    console.log("====================================");
   const resultPerPage = 12;
 
-  const searchFeature = new SearchFeatures(Product.find(), req.query)
-    .search()
-    .filter();
+  // Build a SearchFeatures instance without pagination first to calculate filtered count
+  const countFeature = new SearchFeatures(Product.find(), req.query);
+  countFeature.search().filter();
+  const filteredProductsCount = await countFeature.query.countDocuments();
 
-  let products = await searchFeature.query.clone();
-  const filteredProductsCount = products.length;
-
+  // Global total count (all products in DB)
   const productsCount = await Product.countDocuments();
 
-  searchFeature.pagination(resultPerPage);
-  products = await searchFeature.query.clone();
+  // Now build the paginated query
+  const apiFeature = new SearchFeatures(Product.find(), req.query);
+  apiFeature.search().filter().pagination(resultPerPage);
+
+  const products = await apiFeature.query;
 
   return res.status(200).json({
     success: true,
@@ -36,11 +39,9 @@ exports.getAllProducts = asyncErrorHandler(async (req, res, next) => {
 });
 
 // ==========================
-// PRODUCT SLIDER
+// PRODUCT SLIDER (all, small set)
 // ==========================
 exports.getProducts = asyncErrorHandler(async (req, res, next) => {
-
-  
   const products = await Product.find();
   res.status(200).json({ success: true, products });
 });
@@ -51,7 +52,6 @@ exports.getProducts = asyncErrorHandler(async (req, res, next) => {
 exports.getProductDetails = asyncErrorHandler(async (req, res, next) => {
   const product = await Product.findById(req.params.id);
   if (!product) return next(new ErrorHandler("Product Not Found", 404));
-
   res.status(200).json({ success: true, product });
 });
 
@@ -103,13 +103,8 @@ exports.deleteProduct = asyncErrorHandler(async (req, res, next) => {
 // ==========================
 exports.getProductReviews = asyncErrorHandler(async (req, res, next) => {
   const product = await Product.findById(req.query.id);
-
   if (!product) return next(new ErrorHandler("Product Not Found", 404));
-
-  res.status(200).json({
-    success: true,
-    reviews: product.reviews,
-  });
+  res.status(200).json({ success: true, reviews: product.reviews });
 });
 
 // ==========================
@@ -117,19 +112,12 @@ exports.getProductReviews = asyncErrorHandler(async (req, res, next) => {
 // ==========================
 exports.deleteReview = asyncErrorHandler(async (req, res, next) => {
   const { productId, id } = req.query;
-
   const product = await Product.findById(productId);
   if (!product) return next(new ErrorHandler("Product Not Found", 404));
 
-  const reviews = product.reviews.filter(
-    (rev) => rev._id.toString() !== id.toString()
-  );
-
+  const reviews = product.reviews.filter((rev) => rev._id.toString() !== id.toString());
   const numOfReviews = reviews.length;
-
-  const ratings =
-    reviews.reduce((acc, item) => item.rating + acc, 0) /
-    (numOfReviews || 1);
+  const ratings = reviews.reduce((acc, item) => item.rating + acc, 0) / (numOfReviews || 1);
 
   product.reviews = reviews;
   product.ratings = ratings;
@@ -137,10 +125,7 @@ exports.deleteReview = asyncErrorHandler(async (req, res, next) => {
 
   await product.save({ validateBeforeSave: false });
 
-  res.status(200).json({
-    success: true,
-    message: "Review Deleted Successfully",
-  });
+  res.status(200).json({ success: true, message: "Review Deleted Successfully" });
 });
 
 // ==========================
@@ -159,10 +144,7 @@ exports.createProductReview = asyncErrorHandler(async (req, res, next) => {
   const product = await Product.findById(productId);
   if (!product) return next(new ErrorHandler("Product Not Found", 404));
 
-  const isReviewed = product.reviews.find(
-    (rev) => rev.user.toString() === req.user._id.toString()
-  );
-
+  const isReviewed = product.reviews.find((rev) => rev.user.toString() === req.user._id.toString());
   if (isReviewed) {
     product.reviews.forEach((rev) => {
       if (rev.user.toString() === req.user._id.toString()) {
@@ -175,29 +157,16 @@ exports.createProductReview = asyncErrorHandler(async (req, res, next) => {
   }
 
   product.numOfReviews = product.reviews.length;
-
-  product.ratings =
-    product.reviews.reduce((acc, item) => item.rating + acc, 0) /
-    (product.reviews.length || 1);
+  product.ratings = product.reviews.reduce((acc, item) => item.rating + acc, 0) / (product.reviews.length || 1);
 
   await product.save({ validateBeforeSave: false });
-
   res.status(200).json({ success: true });
 });
 
-
-
-exports.getSliderProducts = async (req, res) => {
-    try {
-        const products = await Product.find().limit(10); // slider ke liye limited data
-        res.status(200).json({
-            success: true,
-            products
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
-};
+// ==========================
+// Slider products (small subset)
+// ==========================
+exports.getSliderProducts = asyncErrorHandler(async (req, res, next) => {
+  const products = await Product.find().limit(10);
+  res.status(200).json({ success: true, products });
+});

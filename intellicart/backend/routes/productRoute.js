@@ -1,3 +1,4 @@
+// backend/routes/productRoute.js
 const express = require("express");
 const {
   getAllProducts,
@@ -10,35 +11,26 @@ const {
   getProductReviews,
   deleteReview,
   createProductReview,
-  getSliderProducts 
+  getSliderProducts,
 } = require("../controllers/productController");
 
 const { isAuthenticatedUser, authorizeRoles } = require("../middlewares/auth");
-
 const router = express.Router();
 
 // PUBLIC
-// Get ALL products (with filters)
-router.get("/products", (req, res, next) => {
-    console.log("🔥 ROUTE HIT: /products");
-    console.log("📩 Incoming Query Params:", req.query);
-    next();
-}, getAllProducts);
+// Get ALL products (with filters, pagination etc.)
+router.get("/products", getAllProducts);
 
-
-// Get Slider products — different route name
+// Slider products
 router.route("/products/slider").get(getSliderProducts);
 
-// Get Single Product
+// Single product details
 router.route("/product/:id").get(getProductDetails);
 
+// ADMIN product routes
+router.route("/admin/products").get(isAuthenticatedUser, authorizeRoles("admin"), getAdminProducts);
 
-// ADMIN
-router.route("/admin/products")
-  .get(isAuthenticatedUser, authorizeRoles("admin"), getAdminProducts);
-
-router.route("/admin/product/new")
-  .post(isAuthenticatedUser, authorizeRoles("admin"), createProduct);
+router.route("/admin/product/new").post(isAuthenticatedUser, authorizeRoles("admin"), createProduct);
 
 router.route("/admin/product/:id")
   .put(isAuthenticatedUser, authorizeRoles("admin"), updateProduct)
@@ -46,10 +38,9 @@ router.route("/admin/product/:id")
 
 // REVIEWS
 router.route("/reviews")
-  .get(isAuthenticatedUser, getProductReviews)   
-  .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteReview);
+  .get(isAuthenticatedUser, getProductReviews) // get reviews by product id
+  .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteReview); // admin delete review
 
-router.route("/review")
-  .put(isAuthenticatedUser, createProductReview);
+router.route("/review").put(isAuthenticatedUser, createProductReview); // add/update review
 
 module.exports = router;
