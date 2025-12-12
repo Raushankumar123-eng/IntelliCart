@@ -5,7 +5,7 @@ import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import Slider from "@mui/material/Slider";
 import { useSnackbar } from "notistack";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { clearErrors, getProducts } from "../../actions/productAction";
@@ -26,247 +26,165 @@ const Products = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // ---------------- URL HANDLING ----------------
+  // --------- URL INPUTS (DIRECT) ----------
+  const query = new URLSearchParams(location.search);
 
-  // path param: /products/:keyword  (used by search bar)
-  const rawKeyword = params.keyword ? decodeURIComponent(params.keyword) : "";
+  const keywordFromURL = params.keyword || "";
+  const categoryFromURL = query.get("category") || "";
+  const priceFromURL = [
+    Number(query.get("price[gte]") || 0),
+    Number(query.get("price[lte]") || 200000),
+  ];
+  const ratingFromURL = Number(query.get("ratings[gte]") || 0);
+  const pageFromURL = Number(query.get("page") || 1);
 
-  // query param: /products?category=Mobiles  (used by category links)
-  const queryParams = new URLSearchParams(location.search);
-  const categoryFromQuery = queryParams.get("category") || "";
-
-  // helper: normalize string and match with categories list
-  const normalizeCategory = (value) => {
-    if (!value) return "";
-    const lower = value.toLowerCase();
-    const match = categories.find((c) => c.toLowerCase() === lower);
-    return match || "";
-  };
-
-  // if URL has ?category=, use that
-  // else, if /products/fashion and "fashion" matches a category, treat it as category (NOT keyword)
-  const initialCategory = useMemo(() => {
-    if (categoryFromQuery) return normalizeCategory(categoryFromQuery);
-    if (rawKeyword) return normalizeCategory(rawKeyword);
-    return "";
-  }, [categoryFromQuery, rawKeyword]);
-
-  // final keyword to send to backend:
-  // if path part is actually a category -> don't use it as keyword
-  const effectiveKeyword = initialCategory ? "" : rawKeyword;
-
-  // ---------------- STATE ----------------
-
-  const [category, setCategory] = useState(initialCategory);
-  const [price, setPrice] = useState([0, 200000]);
-  const [ratings, setRatings] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
+  // --------- STATE ----------
+  const [keyword] = useState(keywordFromURL);
+  const [category, setCategory] = useState(categoryFromURL);
+  const [price, setPrice] = useState(priceFromURL);
+  const [ratings, setRatings] = useState(ratingFromURL);
+  const [currentPage, setCurrentPage] = useState(pageFromURL);
 
   const [categoryToggle, setCategoryToggle] = useState(true);
   const [ratingsToggle, setRatingsToggle] = useState(true);
 
-  const {
-    products,
-    loading,
-    error,
-    productsCount,
-    resultPerPage,
-    filteredProductsCount,
-  } = useSelector((state) => state.products);
+  const { products, loading, error, resultPerPage, filteredProductsCount } =
+    useSelector((state) => state.products);
 
-  // ---------------- URL <-> STATE sync on mount ----------------
+  // --------- UPDATE URL ----------
+  const updateURL = (newParams = {}) => {
+    const p = new URLSearchParams();
 
-  useEffect(() => {
-    const qp = new URLSearchParams(location.search);
+    if (keyword) p.set("keyword", keyword);
+    if (category) p.set("category", category);
 
-    const cat = qp.get("category") || "";
-    const page = Number(qp.get("page") || 1);
-    const priceGte = Number(qp.get("price[gte]") || 0);
-    const priceLte = Number(qp.get("price[lte]") || 200000);
-    const r = Number(qp.get("ratings[gte]") || 0);
+    p.set("price[gte]", price[0]);
+    p.set("price[lte]", price[1]);
+    p.set("ratings[gte]", ratings);
+    p.set("page", currentPage);
 
-    setCategory(normalizeCategory(cat));
-    setCurrentPage(page);
-    setPrice([priceGte, priceLte]);
-    setRatings(r);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // run once on mount
+    Object.entries(newParams).forEach(([key, val]) => {
+      if (val === "" || val === null) p.delete(key);
+      else p.set(key, val);
+    });
 
-  // ---------------- helper to update URL params ----------------
-
-  const updateUrlParams = (overrides = {}) => {
-    const params = new URLSearchParams(location.search);
-
-    // keep keyword if present (path or query)
-    const kw = params.get("keyword") || rawKeyword;
-    if (kw) params.set("keyword", kw);
-
-    // category
-    if (overrides.category !== undefined) {
-      if (overrides.category) params.set("category", overrides.category);
-      else params.delete("category");
-    }
-
-    // page
-    if (overrides.page !== undefined) {
-      params.set("page", String(overrides.page));
-    }
-
-    // price
-    if (overrides.price !== undefined && Array.isArray(overrides.price)) {
-      params.set("price[gte]", String(overrides.price[0]));
-      params.set("price[lte]", String(overrides.price[1]));
-    }
-
-    // ratings
-    if (overrides.ratings !== undefined) {
-      params.set("ratings[gte]", String(overrides.ratings));
-    }
-
-    // navigate (will trigger effect that reads location.search)
-    navigate({ pathname: "/products", search: `?${params.toString()}` });
+    navigate(`/products?${p.toString()}`);
   };
 
-  // ---------------- HANDLERS ----------------
-
+  // --------- FILTER HANDLERS ----------
   const priceHandler = (e, newPrice) => {
     setPrice(newPrice);
     setCurrentPage(1);
-    updateUrlParams({ price: newPrice, page: 1 });
+    updateURL({
+      "price[gte]": newPrice[0],
+      "price[lte]": newPrice[1],
+      page: 1,
+    });
+  };
+
+  const onCategoryChange = (value) => {
+    setCategory(value);
+    setCurrentPage(1);
+
+    updateURL({
+      category: value,
+      page: 1,
+    });
+  };
+
+  const onRatingsChange = (value) => {
+    setRatings(value);
+    setCurrentPage(1);
+
+    updateURL({
+      "ratings[gte]": value,
+      page: 1,
+    });
   };
 
   const clearFilters = () => {
-    setPrice([0, 200000]);
     setCategory("");
+    setPrice([0, 200000]);
     setRatings(0);
     setCurrentPage(1);
 
-    // remove related params
-    const params = new URLSearchParams(location.search);
-    params.delete("category");
-    params.delete("page");
-    params.set("price[gte]", "0");
-    params.set("price[lte]", "200000");
-    params.set("ratings[gte]", "0");
-    navigate({ pathname: "/products", search: `?${params.toString()}` });
+    navigate("/products?price[gte]=0&price[lte]=200000&ratings[gte]=0&page=1");
   };
 
-  const onCategoryChange = (val) => {
-    setCategory(val);
-    setCurrentPage(1);
-    if (val) updateUrlParams({ category: val, page: 1 });
-    else updateUrlParams({ category: undefined, page: 1 });
+  // --------- PAGE CHANGE ----------
+  const setCurrentPageHandler = (value) => {
+    setCurrentPage(value);
+    updateURL({ page: value });
   };
 
-  const onRatingsChange = (val) => {
-    setRatings(val);
-    setCurrentPage(1);
-    updateUrlParams({ ratings: val, page: 1 });
-  };
-
-  const setCurrentPageHandler = (val) => {
-    setCurrentPage(val);
-    updateUrlParams({ page: val });
-  };
-
-  // ---------------- EFFECT: FETCH PRODUCTS based on URL ----------------
-
+  // --------- FETCH PRODUCTS ----------
   useEffect(() => {
     if (error) {
       enqueueSnackbar(error, { variant: "error" });
       dispatch(clearErrors());
     }
 
-    // read final params from URL to guarantee exact values
-    const qp = new URLSearchParams(location.search);
-    const cat = qp.get("category") || "";
-    const p = Number(qp.get("page") || 1);
-    const priceGte = Number(qp.get("price[gte]") || 0);
-    const priceLte = Number(qp.get("price[lte]") || 200000);
-    const r = Number(qp.get("ratings[gte]") || 0);
-
-    // If initialCategory was derived from the raw keyword (e.g., /products/fashion),
-    // we must preserve the earlier logic where such category-like path should not be used as keyword.
-    const keywordToSend = initialCategory && !categoryFromQuery ? "" : effectiveKeyword;
-
     dispatch(
       getProducts(
-        keywordToSend,
-        cat,
-        [priceGte, priceLte],
-        r,
-        p
+        keyword,
+        category,
+        price,
+        ratings,
+        currentPage
       )
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, location.search, error, enqueueSnackbar]);
+  }, [dispatch, keyword, category, price, ratings, currentPage, error]);
 
-  // ---------------- RENDER ----------------
-
+  // --------- UI ----------
   return (
     <>
       <MetaData title="All Products | IntelliCart" />
       <MinCategory />
 
       <main className="w-full mt-14 sm:mt-0">
-        <div className="flex gap-3 mt-2 sm:mt-2 sm:mx-3 m-auto mb-7">
-          {/* Filter Sidebar */}
+        <div className="flex gap-3 mt-2 sm:mx-3 mb-7">
+          {/* FILTER SECTION */}
           <div className="hidden sm:flex flex-col w-1/5 px-1 bg-white shadow">
-            <div className="flex items-center justify-between gap-5 px-4 py-2 border-b">
+            <div className="flex items-center justify-between px-4 py-2 border-b">
               <p className="text-lg font-medium">Filters</p>
               <span
-                className="uppercase text-primary-blue text-xs cursor-pointer font-medium"
+                className="uppercase text-primary-blue text-xs cursor-pointer"
                 onClick={clearFilters}
               >
                 clear all
               </span>
             </div>
 
-            <div className="flex flex-col gap-2 py-3 text-sm overflow-hidden">
-              {/* Price Filter */}
+            <div className="flex flex-col gap-2 py-3 text-sm">
+
+              {/* PRICE */}
               <div className="flex flex-col gap-2 border-b px-4">
                 <span className="font-medium text-xs">PRICE</span>
 
                 <Slider
                   value={price}
                   onChange={priceHandler}
-                  valueLabelDisplay="auto"
                   min={0}
                   max={200000}
+                  valueLabelDisplay="auto"
                 />
-
-                <div className="flex gap-3 items-center justify-between mb-2">
-                  <span className="flex-1 border px-4 py-1 bg-gray-50">
-                    ₹{price[0].toLocaleString()}
-                  </span>
-                  <span className="font-medium text-gray-400">to</span>
-                  <span className="flex-1 border px-4 py-1 bg-gray-50">
-                    ₹{price[1].toLocaleString()}
-                  </span>
-                </div>
               </div>
 
-              {/* Category Filter */}
+              {/* CATEGORY */}
               <div className="flex flex-col border-b px-4">
                 <div
-                  className="flex justify-between cursor-pointer py-2 items-center"
+                  className="flex justify-between cursor-pointer py-2"
                   onClick={() => setCategoryToggle(!categoryToggle)}
                 >
                   <p className="font-medium text-xs uppercase">Category</p>
-                  {categoryToggle ? (
-                    <ExpandLessIcon sx={{ fontSize: "20px" }} />
-                  ) : (
-                    <ExpandMoreIcon sx={{ fontSize: "20px" }} />
-                  )}
+                  {categoryToggle ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                 </div>
 
                 {categoryToggle && (
                   <FormControl>
                     <RadioGroup
                       value={category}
-                      onChange={(e) => {
-                        onCategoryChange(e.target.value);
-                      }}
+                      onChange={(e) => onCategoryChange(e.target.value)}
                     >
                       {categories.map((el, i) => (
                         <FormControlLabel
@@ -276,38 +194,32 @@ const Products = () => {
                           label={<span className="text-sm">{el}</span>}
                         />
                       ))}
-                      {/* Option to clear category */}
+
                       <FormControlLabel
-                        value={""}
+                        value=""
                         control={<Radio size="small" />}
-                        label={<span className="text-sm">All</span>}
+                        label="All"
                       />
                     </RadioGroup>
                   </FormControl>
                 )}
               </div>
 
-              {/* Ratings Filter */}
+              {/* RATINGS */}
               <div className="flex flex-col border-b px-4">
                 <div
-                  className="flex justify-between cursor-pointer py-2 items-center"
+                  className="flex justify-between cursor-pointer py-2"
                   onClick={() => setRatingsToggle(!ratingsToggle)}
                 >
-                  <p className="font-medium text-xs uppercase">ratings</p>
-                  {ratingsToggle ? (
-                    <ExpandLessIcon sx={{ fontSize: "20px" }} />
-                  ) : (
-                    <ExpandMoreIcon sx={{ fontSize: "20px" }} />
-                  )}
+                  <p className="font-medium text-xs uppercase">Ratings</p>
+                  {ratingsToggle ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                 </div>
 
                 {ratingsToggle && (
                   <FormControl>
                     <RadioGroup
                       value={String(ratings)}
-                      onChange={(e) => {
-                        onRatingsChange(Number(e.target.value));
-                      }}
+                      onChange={(e) => onRatingsChange(Number(e.target.value))}
                     >
                       {[4, 3, 2, 1].map((el) => (
                         <FormControlLabel
@@ -315,19 +227,12 @@ const Products = () => {
                           value={String(el)}
                           control={<Radio size="small" />}
                           label={
-                            <span className="flex items-center text-sm">
-                              {el}
-                              <StarIcon sx={{ fontSize: "12px", mr: 0.5 }} />{" "}
-                              &amp; above
+                            <span className="text-sm flex items-center">
+                              {el} <StarIcon sx={{ fontSize: 12 }} /> & above
                             </span>
                           }
                         />
                       ))}
-                      <FormControlLabel
-                        value={"0"}
-                        control={<Radio size="small" />}
-                        label={<span className="text-sm">All</span>}
-                      />
                     </RadioGroup>
                   </FormControl>
                 )}
@@ -335,39 +240,27 @@ const Products = () => {
             </div>
           </div>
 
-          {/* Products List */}
+          {/* PRODUCT LIST */}
           <div className="flex-1">
-            {!loading && products?.length === 0 && (
-              <div className="flex flex-col items-center justify-center p-6 sm:p-16 bg-white shadow-sm rounded-sm">
-                <img
-                  draggable="false"
-                  className="w-1/2 h-44 object-contain"
-                  src="https://static-assets-web.flixcart.com/www/linchpin/fk-cp-zion/img/error-no-search-results_2353c5.png"
-                  alt="Search Not Found"
-                />
-                <h1 className="text-2xl font-medium">
-                  Sorry, no results found!
-                </h1>
+            {!loading && products?.length === 0 ? (
+              <div className="p-8 bg-white shadow text-center">
+                <h1 className="text-2xl font-medium">No Products Found</h1>
               </div>
-            )}
-
-            {loading ? (
+            ) : loading ? (
               <Loader />
             ) : (
-              <div className="flex flex-col gap-2 pb-4 items-center bg-white">
-                <div className="grid grid-cols-1 sm:grid-cols-4 w-full pb-4 border-b">
-                  {products?.map((product) => (
-                    <Product {...product} key={product._id} />
+              <div className="flex flex-col pb-4 bg-white">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 border-b p-2">
+                  {products.map((p) => (
+                    <Product key={p._id} {...p} />
                   ))}
                 </div>
 
                 {filteredProductsCount > resultPerPage && (
                   <Pagination
-                    count={Number(
-                      ((filteredProductsCount + 6) / resultPerPage).toFixed()
-                    )}
                     page={currentPage}
-                    onChange={(e, val) => setCurrentPageHandler(val)}
+                    onChange={(e, value) => setCurrentPageHandler(value)}
+                    count={Math.ceil(filteredProductsCount / resultPerPage)}
                     color="primary"
                   />
                 )}
