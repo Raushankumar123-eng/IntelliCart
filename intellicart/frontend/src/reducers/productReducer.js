@@ -39,24 +39,19 @@ import {
     SIMILAR_PRODUCTS_REQUEST,
     SIMILAR_PRODUCTS_SUCCESS,
     SIMILAR_PRODUCTS_FAIL,
-    adminProductsReducer,
 } from "../constants/productConstants";
 
 // =======================
-// PRODUCTS REDUCER
+// USER PRODUCTS REDUCER
 // =======================
 export const productsReducer = (state = { products: [] }, action) => {
     const { type, payload } = action;
 
     switch (type) {
         case ALL_PRODUCTS_REQUEST:
-        case ADMIN_PRODUCTS_REQUEST:
         case SLIDER_PRODUCTS_REQUEST:
         case SIMILAR_PRODUCTS_REQUEST:
-            return {
-                loading: true,
-                products: [],
-            };
+            return { loading: true, products: [] };
 
         case ALL_PRODUCTS_SUCCESS:
             return {
@@ -67,28 +62,14 @@ export const productsReducer = (state = { products: [] }, action) => {
                 filteredProductsCount: payload.filteredProductsCount,
             };
 
-        // ADMIN products always return full list
-        case ADMIN_PRODUCTS_SUCCESS:
-            return {
-                loading: false,
-                products: payload.products,
-            };
-
         case SLIDER_PRODUCTS_SUCCESS:
         case SIMILAR_PRODUCTS_SUCCESS:
-            return {
-                loading: false,
-                products: payload,
-            };
+            return { loading: false, products: payload };
 
         case ALL_PRODUCTS_FAIL:
-        case ADMIN_PRODUCTS_FAIL:
         case SLIDER_PRODUCTS_FAIL:
         case SIMILAR_PRODUCTS_FAIL:
-            return {
-                loading: false,
-                error: payload,
-            };
+            return { loading: false, error: payload };
 
         case CLEAR_ERRORS:
             return { ...state, error: null };
@@ -99,7 +80,29 @@ export const productsReducer = (state = { products: [] }, action) => {
 };
 
 // =======================
-// PRODUCT DETAILS REDUCER
+// ADMIN PRODUCTS REDUCER
+// =======================
+export const adminProductsReducer = (state = { products: [] }, action) => {
+    switch (action.type) {
+        case ADMIN_PRODUCTS_REQUEST:
+            return { loading: true, products: [] };
+
+        case ADMIN_PRODUCTS_SUCCESS:
+            return { loading: false, products: action.payload };
+
+        case ADMIN_PRODUCTS_FAIL:
+            return { loading: false, error: action.payload };
+
+        case CLEAR_ERRORS:
+            return { ...state, error: null };
+
+        default:
+            return state;
+    }
+};
+
+// =======================
+// PRODUCT DETAILS
 // =======================
 export const productDetailsReducer = (state = { product: {} }, action) => {
     switch (action.type) {
@@ -174,7 +177,7 @@ export const newProductReducer = (state = { product: {} }, action) => {
 };
 
 // =======================
-// UPDATE / DELETE PRODUCT
+// UPDATE/DELETE PRODUCT
 // =======================
 export const productReducer = (state = {}, action) => {
     switch (action.type) {
@@ -244,27 +247,6 @@ export const reviewReducer = (state = {}, action) => {
 
         case DELETE_REVIEW_RESET:
             return { ...state, isDeleted: false };
-
-        case CLEAR_ERRORS:
-            return { ...state, error: null };
-
-        default:
-            return state;
-    }
-};
-
-
-
-export const adminProductsReducer = (state = { products: [] }, action) => {
-    switch (action.type) {
-        case ADMIN_PRODUCTS_REQUEST:
-            return { loading: true, products: [] };
-
-        case ADMIN_PRODUCTS_SUCCESS:
-            return { loading: false, products: action.payload.products };
-
-        case ADMIN_PRODUCTS_FAIL:
-            return { loading: false, error: action.payload };
 
         case CLEAR_ERRORS:
             return { ...state, error: null };
