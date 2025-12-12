@@ -47,28 +47,32 @@ export const getProducts = (
     try {
         dispatch({ type: ALL_PRODUCTS_REQUEST });
 
-        // Base URL without keyword
-        let link = `/products?page=${page}`;
+        // ⭐ Correct Endpoint
+        let link = `/products/all?page=${page}`;
 
-        // keyword only if it actually exists
+        // keyword only if present
         if (keyword && keyword.trim() !== "") {
             link += `&keyword=${encodeURIComponent(keyword.trim())}`;
         }
 
-        // category independent filter
+        // category filter
         if (category && category.trim() !== "") {
             link += `&category=${encodeURIComponent(category.trim())}`;
         }
 
-        // Price filter
+        // price filter
         link += `&price[gte]=${price[0]}&price[lte]=${price[1]}`;
 
-        // Ratings filter
+        // ratings filter
         link += `&ratings[gte]=${ratings}`;
 
+        // call API
         const { data } = await API.get(link);
 
-        dispatch({ type: ALL_PRODUCTS_SUCCESS, payload: data });
+        dispatch({
+            type: ALL_PRODUCTS_SUCCESS,
+            payload: data,
+        });
 
     } catch (error) {
         dispatch({
@@ -77,6 +81,7 @@ export const getProducts = (
         });
     }
 };
+
 
 
 // Product Details
