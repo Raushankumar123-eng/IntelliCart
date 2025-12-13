@@ -83,23 +83,24 @@ export const productsReducer = (state = { products: [] }, action) => {
 // ADMIN PRODUCTS REDUCER
 // =======================
 export const adminProductsReducer = (state = { products: [] }, action) => {
-    switch (action.type) {
-        case ADMIN_PRODUCTS_REQUEST:
-            return { loading: true, products: [] };
+  switch (action.type) {
+    case ADMIN_PRODUCTS_REQUEST:
+      return { loading: true, products: [] };
 
-        case ADMIN_PRODUCTS_SUCCESS:
-            return { loading: false, products: action.payload };
+    case ADMIN_PRODUCTS_SUCCESS:
+      return { loading: false, products: action.payload.products };
 
-        case ADMIN_PRODUCTS_FAIL:
-            return { loading: false, error: action.payload };
+    case ADMIN_PRODUCTS_FAIL:
+      return { loading: false, error: action.payload };
 
-        case CLEAR_ERRORS:
-            return { ...state, error: null };
+    case CLEAR_ERRORS:
+      return { ...state, error: null };
 
-        default:
-            return state;
-    }
+    default:
+      return state;
+  }
 };
+
 
 // =======================
 // PRODUCT DETAILS

@@ -100,22 +100,23 @@ export const getProductDetails = (id) => async (dispatch) => {
 // Admin — All Products
 // =============================
 export const getAdminProducts = () => async (dispatch) => {
-    try {
-        dispatch({ type: ADMIN_PRODUCTS_REQUEST });
+  try {
+    dispatch({ type: ADMIN_PRODUCTS_REQUEST });
 
-        const { data } = await API.get(`/admin/products`);
+    const { data } = await axios.get("/api/v1/admin/products");
 
-        dispatch({
-            type: ADMIN_PRODUCTS_SUCCESS,
-            payload: data.products,
-        });
-    } catch (error) {
-        dispatch({
-            type: ADMIN_PRODUCTS_FAIL,
-            payload: error.response.data.message,
-        });
-    }
+    dispatch({
+      type: ADMIN_PRODUCTS_SUCCESS,
+      payload: data, // data.products
+    });
+  } catch (error) {
+    dispatch({
+      type: ADMIN_PRODUCTS_FAIL,
+      payload: error.response.data.message,
+    });
+  }
 };
+
 
 
 // =============================
