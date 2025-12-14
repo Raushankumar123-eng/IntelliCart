@@ -94,14 +94,14 @@ const Footer = () => {
               <div className="w-full sm:w-1/2">
                 <h2 className="text-primary-grey">Registered Office Address:</h2>
                 <p className="mt-2 leading-5">
-                  Intelli-Cart Internet Private Limited,<br />
-                  Buildings Alyssa, Begonia &<br />
-                  Clove Embassy Tech Village,<br />
-                  Outer Ring Road, Devarabeesanahalli Village,<br />
-                  Bengaluru, 560103,<br />
-                  Karnataka, India <br />
-                  CIN : U51109KA2012PTC066107<br />
-                  Telephone: <a className="text-primary-blue" href="tel:18002029898">1800 202 9898</a>
+                  Orbique Technologies Private Limited,<br />
+                  Sector 58,<br />
+                  Noida – 201301,<br />
+                  Uttar Pradesh, India<br />
+                  Telephone:{" "}
+                  <a className="text-primary-blue" href="tel:+919999999999">
+                    +91 99999 99999
+                  </a>
                 </p>
               </div>
             </div>
