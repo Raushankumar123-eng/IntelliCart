@@ -35,6 +35,7 @@ const MainData = () => {
     });
 
    useEffect(() => {
+    dispatch(getAdminProducts());
     dispatch(getAllOrders());
     dispatch(getAllUsers());
     dispatch(getProducts());
