@@ -107,7 +107,7 @@ export const getAdminProducts = () => async (dispatch) => {
 
     dispatch({
       type: ADMIN_PRODUCTS_SUCCESS,
-      payload: data.products, // array
+      payload: data.products, // ✅ ARRAY ONLY
     });
   } catch (error) {
     dispatch({

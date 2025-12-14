@@ -88,7 +88,10 @@ export const adminProductsReducer = (state = { products: [] }, action) => {
       return { loading: true, products: [] };
 
     case ADMIN_PRODUCTS_SUCCESS:
-      return { loading: false, products: action.payload.products };
+      return {
+        loading: false,
+        products: action.payload, // ✅ DIRECT ARRAY
+      };
 
     case ADMIN_PRODUCTS_FAIL:
       return { loading: false, error: action.payload };
@@ -100,6 +103,7 @@ export const adminProductsReducer = (state = { products: [] }, action) => {
       return state;
   }
 };
+
 
 
 // =======================
