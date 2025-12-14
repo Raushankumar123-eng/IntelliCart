@@ -11,16 +11,24 @@ import { getProducts } from "../../actions/productAction";
 
 
 const MainData = () => {
-
     const dispatch = useDispatch();
 
-    const { products = []} = useSelector((state) => state.products);
-    const { orders =[] } = useSelector((state) => state.allOrders);
-    const { users =[] } = useSelector((state) => state.users);
+    // ✅ ADMIN products (NO LIMIT)
+    const { products = [] } = useSelector(
+        (state) => state.adminProducts
+    );
+
+    const { orders = [] } = useSelector(
+        (state) => state.allOrders
+    );
+
+    const { users = [] } = useSelector(
+        (state) => state.users
+    );
 
     let outOfStock = 0;
 
-    products?.forEach((item) => {
+    products.forEach((item) => {
         if (item.stock === 0) {
             outOfStock += 1;
         }
