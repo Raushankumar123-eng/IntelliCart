@@ -1,4 +1,3 @@
-// src/actions/productAction.js
 import API from "../utils/axios";
 import {
   ALL_PRODUCTS_REQUEST,
@@ -29,12 +28,6 @@ import {
   NEW_REVIEW_SUCCESS,
   NEW_REVIEW_FAIL,
 
-  CLEAR_ERRORS,
-
-  SIMILAR_PRODUCTS_REQUEST,
-  SIMILAR_PRODUCTS_SUCCESS,
-  SIMILAR_PRODUCTS_FAIL,
-
   ALL_REVIEWS_REQUEST,
   ALL_REVIEWS_SUCCESS,
   ALL_REVIEWS_FAIL,
@@ -43,14 +36,21 @@ import {
   DELETE_REVIEW_SUCCESS,
   DELETE_REVIEW_FAIL,
 
+  SIMILAR_PRODUCTS_REQUEST,
+  SIMILAR_PRODUCTS_SUCCESS,
+  SIMILAR_PRODUCTS_FAIL,
+
   SLIDER_PRODUCTS_REQUEST,
   SLIDER_PRODUCTS_SUCCESS,
   SLIDER_PRODUCTS_FAIL,
+
+  CLEAR_ERRORS,
 } from "../constants/productConstants";
 
-/* =============================
-   USER — PRODUCTS (PAGINATED)
-============================= */
+
+// =============================
+// USER PRODUCTS (PAGINATED)
+// =============================
 export const getProducts =
   (keyword = "", category = "", price = [0, 200000], ratings = 0, page = 1) =>
   async (dispatch) => {
@@ -74,129 +74,178 @@ export const getProducts =
     }
   };
 
-/* =============================
-   ADMIN — ALL PRODUCTS (NO LIMIT)
-============================= */
+
+// =============================
+// ADMIN PRODUCTS
+// =============================
 export const getAdminProducts = () => async (dispatch) => {
   try {
     dispatch({ type: ADMIN_PRODUCTS_REQUEST });
-
     const { data } = await API.get("/admin/products");
 
     dispatch({
       type: ADMIN_PRODUCTS_SUCCESS,
-      payload: data.products, // ✅ ARRAY ONLY
-    });
-  } catch (error) {
-    dispatch({
-      type: ADMIN_PRODUCTS_FAIL,
-      payload: error.response?.data?.message || "Failed to load admin products",
-    });
-  }
-};
-
-/* =============================
-   PRODUCT DETAILS
-============================= */
-export const getProductDetails = (id) => async (dispatch) => {
-  try {
-    dispatch({ type: PRODUCT_DETAILS_REQUEST });
-    const { data } = await API.get(`/product/${id}`);
-    dispatch({ type: PRODUCT_DETAILS_SUCCESS, payload: data.product });
-  } catch (error) {
-    dispatch({
-      type: PRODUCT_DETAILS_FAIL,
-      payload: error.response?.data?.message || "Failed to load product",
-    });
-  }
-};
-
-/* =============================
-   SIMILAR PRODUCTS
-============================= */
-export const getSimilarProducts = (category) => async (dispatch) => {
-  try {
-    dispatch({ type: SIMILAR_PRODUCTS_REQUEST });
-    const { data } = await API.get(
-      `/products?category=${encodeURIComponent(category)}`
-    );
-    dispatch({
-      type: SIMILAR_PRODUCTS_SUCCESS,
       payload: data.products,
     });
   } catch (error) {
     dispatch({
-      type: SIMILAR_PRODUCTS_FAIL,
-      payload: error.response?.data?.message || "Failed to load similar products",
+      type: ADMIN_PRODUCTS_FAIL,
+      payload: error.response?.data?.message || "Admin products failed",
     });
   }
 };
 
-/* =============================
-   CREATE / UPDATE / DELETE
-============================= */
+
+// =============================
+// PRODUCT DETAILS
+// =============================
+export const getProductDetails = (id) => async (dispatch) => {
+  try {
+    dispatch({ type: PRODUCT_DETAILS_REQUEST });
+    const { data } = await API.get(`/product/${id}`);
+
+    dispatch({
+      type: PRODUCT_DETAILS_SUCCESS,
+      payload: data.product,
+    });
+  } catch (error) {
+    dispatch({
+      type: PRODUCT_DETAILS_FAIL,
+      payload: error.response?.data?.message || "Product details failed",
+    });
+  }
+};
+
+
+// =============================
+// CREATE PRODUCT
+// =============================
 export const createProduct = (productData) => async (dispatch) => {
   try {
     dispatch({ type: NEW_PRODUCT_REQUEST });
+
     const { data } = await API.post(`/admin/product/new`, productData);
-    dispatch({ type: NEW_PRODUCT_SUCCESS, payload: data });
+
+    dispatch({
+      type: NEW_PRODUCT_SUCCESS,
+      payload: data.success,
+    });
   } catch (error) {
     dispatch({
       type: NEW_PRODUCT_FAIL,
-      payload: error.response?.data?.message || "Create failed",
+      payload: error.response?.data?.message || "Create product failed",
     });
   }
 };
 
+
+// =============================
+// UPDATE PRODUCT
+// =============================
 export const updateProduct = (id, productData) => async (dispatch) => {
   try {
     dispatch({ type: UPDATE_PRODUCT_REQUEST });
+
     const { data } = await API.put(`/admin/product/${id}`, productData);
-    dispatch({ type: UPDATE_PRODUCT_SUCCESS, payload: data.success });
+
+    dispatch({
+      type: UPDATE_PRODUCT_SUCCESS,
+      payload: data.success,
+    });
   } catch (error) {
     dispatch({
       type: UPDATE_PRODUCT_FAIL,
-      payload: error.response?.data?.message || "Update failed",
+      payload: error.response?.data?.message || "Update product failed",
     });
   }
 };
 
+
+// =============================
+// DELETE PRODUCT
+// =============================
 export const deleteProduct = (id) => async (dispatch) => {
   try {
     dispatch({ type: DELETE_PRODUCT_REQUEST });
+
     const { data } = await API.delete(`/admin/product/${id}`);
-    dispatch({ type: DELETE_PRODUCT_SUCCESS, payload: data.success });
+
+    dispatch({
+      type: DELETE_PRODUCT_SUCCESS,
+      payload: data.success,
+    });
   } catch (error) {
     dispatch({
       type: DELETE_PRODUCT_FAIL,
-      payload: error.response?.data?.message || "Delete failed",
+      payload: error.response?.data?.message || "Delete product failed",
     });
   }
 };
 
-/* =============================
-   REVIEWS + SLIDER
-============================= */
+
+// =============================
+// ⭐ NEW REVIEW (MAIN FIX)
+// =============================
+export const newReview = (reviewData) => async (dispatch) => {
+  try {
+    dispatch({ type: NEW_REVIEW_REQUEST });
+
+    const config = {
+      headers: { "Content-Type": "application/json" },
+    };
+
+    const { data } = await API.put("/review", reviewData, config);
+
+    dispatch({
+      type: NEW_REVIEW_SUCCESS,
+      payload: data.success,
+    });
+  } catch (error) {
+    dispatch({
+      type: NEW_REVIEW_FAIL,
+      payload: error.response?.data?.message || "Review failed",
+    });
+  }
+};
+
+
+// =============================
+// ALL REVIEWS
+// =============================
 export const getAllReviews = (productId) => async (dispatch) => {
   try {
     dispatch({ type: ALL_REVIEWS_REQUEST });
+
     const { data } = await API.get(`/reviews?id=${productId}`);
-    dispatch({ type: ALL_REVIEWS_SUCCESS, payload: data.reviews });
+
+    dispatch({
+      type: ALL_REVIEWS_SUCCESS,
+      payload: data.reviews,
+    });
   } catch (error) {
     dispatch({
       type: ALL_REVIEWS_FAIL,
-      payload: error.response?.data?.message || "Failed to load reviews",
+      payload: error.response?.data?.message || "Reviews load failed",
     });
   }
 };
 
+
+// =============================
+// DELETE REVIEW
+// =============================
 export const deleteReview = (reviewId, productId) => async (dispatch) => {
   try {
     dispatch({ type: DELETE_REVIEW_REQUEST });
+
     const { data } = await API.delete(
       `/reviews?id=${reviewId}&productId=${productId}`
     );
-    dispatch({ type: DELETE_REVIEW_SUCCESS, payload: data.success });
+
+    dispatch({
+      type: DELETE_REVIEW_SUCCESS,
+      payload: data.success,
+    });
   } catch (error) {
     dispatch({
       type: DELETE_REVIEW_FAIL,
@@ -205,19 +254,10 @@ export const deleteReview = (reviewId, productId) => async (dispatch) => {
   }
 };
 
-export const getSliderProducts = () => async (dispatch) => {
-  try {
-    dispatch({ type: SLIDER_PRODUCTS_REQUEST });
-    const { data } = await API.get("/products/slider");
-    dispatch({ type: SLIDER_PRODUCTS_SUCCESS, payload: data.products });
-  } catch (error) {
-    dispatch({
-      type: SLIDER_PRODUCTS_FAIL,
-      payload: error.response?.data?.message || "Slider load failed",
-    });
-  }
-};
 
+// =============================
+// CLEAR ERRORS
+// =============================
 export const clearErrors = () => (dispatch) => {
   dispatch({ type: CLEAR_ERRORS });
 };
