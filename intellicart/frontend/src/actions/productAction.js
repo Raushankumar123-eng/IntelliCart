@@ -116,6 +116,28 @@ export const getProductDetails = (id) => async (dispatch) => {
   }
 };
 
+// =============================
+// SLIDER PRODUCTS
+// =============================
+export const getSliderProducts = () => async (dispatch) => {
+  try {
+    dispatch({ type: SLIDER_PRODUCTS_REQUEST });
+
+    const { data } = await API.get("/products/slider");
+
+    dispatch({
+      type: SLIDER_PRODUCTS_SUCCESS,
+      payload: data.products,
+    });
+  } catch (error) {
+    dispatch({
+      type: SLIDER_PRODUCTS_FAIL,
+      payload: error.response?.data?.message || "Slider products failed",
+    });
+  }
+};
+
+
 
 // =============================
 // CREATE PRODUCT
