@@ -96,7 +96,7 @@ const Footer = () => {
               <div className="w-full sm:w-1/2">
                 <h2 className="text-primary-grey">Registered Office Address:</h2>
                 <p className="mt-2 leading-5">
-                  Orbique Technologies Private Limited,<br />
+                  Intelli-Cart  Private Limited,<br />
                   Sector 58,<br />
                   Noida – 201301,<br />
                   Uttar Pradesh, India<br />
