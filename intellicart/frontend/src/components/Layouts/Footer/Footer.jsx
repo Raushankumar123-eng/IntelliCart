@@ -82,14 +82,16 @@ const Footer = () => {
               <div className="w-full sm:w-1/2">
                 <h2 className="text-primary-grey">Mail Us:</h2>
                 <p className="mt-2 leading-5">
-                  Intelli-Cart Internet Private Limited,<br />
-                  Buildings Alyssa, Begonia &<br />
-                  Clove Embassy Tech Village,<br />
-                  Outer Ring Road, Devarabeesanahalli Village,<br />
-                  Bengaluru, 560103,<br />
-                  Karnataka, India
+                  For any queries or support, reach us at:<br />
+                  <a
+                    href="mailto:tiwariraushan60@gmail.com"
+                    className="text-primary-blue"
+                  >
+                    tiwariraushan60@gmail.com
+                  </a>
                 </p>
               </div>
+
 
               <div className="w-full sm:w-1/2">
                 <h2 className="text-primary-grey">Registered Office Address:</h2>
