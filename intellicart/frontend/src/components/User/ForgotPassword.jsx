@@ -19,11 +19,15 @@ const ForgotPassword = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const formData = new FormData();
-        formData.set("email", email);
-        dispatch(forgotPassword(formData));
-        setEmail("");
-    }
+
+        if (!email) {
+            enqueueSnackbar("Email is required", { variant: "error" });
+            return;
+        }
+
+        dispatch(forgotPassword(email)); // ✅ ONLY EMAIL
+    };
+
 
     useEffect(() => {
         if (error) {

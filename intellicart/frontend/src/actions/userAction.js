@@ -145,14 +145,14 @@ export const forgotPassword = (email) => async (dispatch) => {
   try {
     dispatch({ type: FORGOT_PASSWORD_REQUEST });
 
-    if (!email) {
-      throw new Error("Email is required");
-    }
-
     const { data } = await API.post(
       "/password/forgot",
-      { email }, // ✅ ONLY THIS
-      { headers: { "Content-Type": "application/json" } }
+      { email }, // ✅ JSON BODY
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
 
     dispatch({
@@ -163,10 +163,12 @@ export const forgotPassword = (email) => async (dispatch) => {
     dispatch({
       type: FORGOT_PASSWORD_FAIL,
       payload:
-        error.response?.data?.message || error.message || "Request failed",
+        error.response?.data?.message ||
+        "Failed to send reset password email",
     });
   }
 };
+
 
 
 
