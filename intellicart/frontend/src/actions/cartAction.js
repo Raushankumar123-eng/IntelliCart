@@ -13,7 +13,7 @@ export const addItemsToCart =
   (id, quantity = 1) =>
   async (dispatch, getState) => {
     try {
-      const { data } = await API.get(`/product/${id}`);
+      const { data } = await API.get(`/products/${id}`);
 
       dispatch({
         type: ADD_TO_CART,
@@ -34,9 +34,13 @@ export const addItemsToCart =
         JSON.stringify(getState().cart.cartItems)
       );
     } catch (error) {
-      console.error("Add to cart failed:", error);
+      console.error(
+        "Add to cart failed:",
+        error.response?.data || error.message
+      );
     }
   };
+
 
 // =============================
 // REMOVE FROM CART
