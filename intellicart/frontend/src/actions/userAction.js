@@ -147,7 +147,7 @@ export const forgotPassword = (email) => async (dispatch) => {
 
     const { data } = await API.post(
       "/password/forgot",
-      { email }, // ✅ FIX
+      { email },   // ✅ object, not string
       { headers: { "Content-Type": "application/json" } }
     );
 
@@ -162,6 +162,7 @@ export const forgotPassword = (email) => async (dispatch) => {
     });
   }
 };
+
 
 
 // Reset Password
