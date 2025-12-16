@@ -145,6 +145,10 @@ export const forgotPassword = (email) => async (dispatch) => {
   try {
     dispatch({ type: FORGOT_PASSWORD_REQUEST });
 
+    console.log("EMAIL:", user.email);
+console.log("RESET URL:", resetPasswordUrl);
+
+
     const { data } = await API.post(
       "/password/forgot",
       { email }, // ✅ JSON BODY
