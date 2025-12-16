@@ -145,9 +145,13 @@ export const forgotPassword = (email) => async (dispatch) => {
   try {
     dispatch({ type: FORGOT_PASSWORD_REQUEST });
 
+    if (!email) {
+      throw new Error("Email is required");
+    }
+
     const { data } = await API.post(
       "/password/forgot",
-      { email },   // ✅ object, not string
+      { email }, // ✅ ONLY THIS
       { headers: { "Content-Type": "application/json" } }
     );
 
@@ -158,10 +162,12 @@ export const forgotPassword = (email) => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: FORGOT_PASSWORD_FAIL,
-      payload: error.response?.data?.message,
+      payload:
+        error.response?.data?.message || error.message || "Request failed",
     });
   }
 };
+
 
 
 
