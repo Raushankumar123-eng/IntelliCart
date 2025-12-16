@@ -1,8 +1,7 @@
 import axios from "axios";
 
-
 const API = axios.create({
-  baseURL: "https://intellicart.onrender.com/api/v1",
+  baseURL: process.env.REACT_APP_API_URL,
   withCredentials: true,
 });
 
