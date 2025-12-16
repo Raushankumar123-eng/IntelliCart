@@ -13,7 +13,7 @@ export const addItemsToCart =
   (id, quantity = 1) =>
   async (dispatch, getState) => {
     try {
-      const { data } = await API.get(`/products/${id}`);
+      const { data } = await API.get(`/product/${id}`);
 
       dispatch({
         type: ADD_TO_CART,
@@ -40,6 +40,7 @@ export const addItemsToCart =
       );
     }
   };
+
 
 
 // =============================
