@@ -88,29 +88,33 @@ exports.getUserDetails = asyncErrorHandler(async (req, res, next) => {
 
 // Forgot Password
 exports.forgotPassword = asyncErrorHandler(async (req, res, next) => {
-    
-    const user = await User.findOne({email: req.body.email});
 
-    if(!user) {
+    const { email } = req.body;
+
+    // ✅ email validation
+    if (!email) {
+        return next(new ErrorHandler("Please provide email", 400));
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
         return next(new ErrorHandler("User Not Found", 404));
     }
 
-    const resetToken = await user.getResetPasswordToken();
-
+    const resetToken = user.getResetPasswordToken();
     await user.save({ validateBeforeSave: false });
 
-    // const resetPasswordUrl = `${req.protocol}://${req.get("host")}/password/reset/${resetToken}`;
-    const resetPasswordUrl = `https://${req.get("host")}/password/reset/${resetToken}`;
-
-    // const message = `Your password reset token is : \n\n ${resetPasswordUrl}`;
+    // ✅ IMPORTANT: frontend reset URL (NOT backend host)
+    const resetPasswordUrl = `https://intelli-cart.vercel.app/password/reset/${resetToken}`;
 
     try {
         await sendEmail({
             email: user.email,
             templateId: process.env.SENDGRID_RESET_TEMPLATEID,
             data: {
-                reset_url: resetPasswordUrl
-            }
+                reset_url: resetPasswordUrl,
+            },
         });
 
         res.status(200).json({
@@ -121,50 +125,74 @@ exports.forgotPassword = asyncErrorHandler(async (req, res, next) => {
     } catch (error) {
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
-
         await user.save({ validateBeforeSave: false });
-        return next(new ErrorHandler(error.message, 500))
+
+        return next(new ErrorHandler("Email could not be sent", 500));
     }
 });
+
 
 // Reset Password
 exports.resetPassword = asyncErrorHandler(async (req, res, next) => {
 
-    // create hash token
-    const resetPasswordToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
+    const resetPasswordToken = crypto
+        .createHash("sha256")
+        .update(req.params.token)
+        .digest("hex");
 
-    const user = await User.findOne({ 
+    const user = await User.findOne({
         resetPasswordToken,
-        resetPasswordExpire: { $gt: Date.now() }
+        resetPasswordExpire: { $gt: Date.now() },
     });
 
-    if(!user) {
-        return next(new ErrorHandler("Invalid reset password token", 404));
+    if (!user) {
+        return next(new ErrorHandler("Invalid or expired reset token", 400));
     }
 
-    user.password = req.body.password;
+    const { password, confirmPassword } = req.body;
+
+    // ✅ validation
+    if (!password || !confirmPassword) {
+        return next(new ErrorHandler("Please enter password and confirm password", 400));
+    }
+
+    if (password !== confirmPassword) {
+        return next(new ErrorHandler("Passwords do not match", 400));
+    }
+
+    user.password = password;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
 
     await user.save();
+
     sendToken(user, 200, res);
 });
+
 
 // Update Password
 exports.updatePassword = asyncErrorHandler(async (req, res, next) => {
 
-    const user = await User.findById(req.user.id).select("+password");
+    const { oldPassword, newPassword } = req.body;
 
-    const isPasswordMatched = await user.comparePassword(req.body.oldPassword);
-
-    if(!isPasswordMatched) {
-        return next(new ErrorHandler("Old Password is Invalid", 400));
+    if (!oldPassword || !newPassword) {
+        return next(new ErrorHandler("Please provide old and new password", 400));
     }
 
-    user.password = req.body.newPassword;
+    const user = await User.findById(req.user.id).select("+password");
+
+    const isPasswordMatched = await user.comparePassword(oldPassword);
+
+    if (!isPasswordMatched) {
+        return next(new ErrorHandler("Old password is incorrect", 400));
+    }
+
+    user.password = newPassword;
     await user.save();
-    sendToken(user, 201, res);
+
+    sendToken(user, 200, res);
 });
+
 
 // Update User Profile
 exports.updateProfile = asyncErrorHandler(async (req, res, next) => {
