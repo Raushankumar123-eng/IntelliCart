@@ -88,50 +88,37 @@ exports.getUserDetails = asyncErrorHandler(async (req, res, next) => {
 
 // Forgot Password
 exports.forgotPassword = asyncErrorHandler(async (req, res, next) => {
+  const { email } = req.body;
 
-    const { email } = req.body;
+  if (!email) {
+    return next(new ErrorHandler("Email is required", 400));
+  }
 
-    // ✅ email validation
-    if (!email) {
-        return next(new ErrorHandler("Please provide email", 400));
-    }
+  const user = await User.findOne({ email });
 
-    const user = await User.findOne({ email });
+  if (!user) {
+    return next(new ErrorHandler("User Not Found", 404));
+  }
 
-    if (!user) {
-        return next(new ErrorHandler("User Not Found", 404));
-    }
+  const resetToken = user.getResetPasswordToken();
+  await user.save({ validateBeforeSave: false });
 
-    const resetToken = user.getResetPasswordToken();
-    await user.save({ validateBeforeSave: false });
+  const resetPasswordUrl = `https://intelli-cart.vercel.app/password/reset/${resetToken}`;
 
-    // ✅ IMPORTANT: frontend reset URL (NOT backend host)
-    const resetPasswordUrl =
-  `https://intelli-cart.vercel.app/password/reset/${resetToken}`;
+  await sendEmail({
+    email: user.email,
+    templateId: process.env.SENDGRID_RESET_TEMPLATEID,
+    data: {
+      reset_url: resetPasswordUrl,
+    },
+  });
 
-
-    try {
-        await sendEmail({
-            email: user.email,
-            templateId: process.env.SENDGRID_RESET_TEMPLATEID,
-            data: {
-                reset_url: resetPasswordUrl,
-            },
-        });
-
-        res.status(200).json({
-            success: true,
-            message: `Email sent to ${user.email} successfully`,
-        });
-
-    } catch (error) {
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpire = undefined;
-        await user.save({ validateBeforeSave: false });
-
-        return next(new ErrorHandler("Email could not be sent", 500));
-    }
+  res.status(200).json({
+    success: true,
+    message: "Reset password email sent successfully",
+  });
 });
+
 
 
 // Reset Password
