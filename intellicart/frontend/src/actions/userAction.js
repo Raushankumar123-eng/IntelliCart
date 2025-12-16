@@ -141,17 +141,14 @@ export const updatePassword = (passwords) => async (dispatch) => {
 };
 
 // Forgot Password
+// Forgot Password
 export const forgotPassword = (email) => async (dispatch) => {
   try {
     dispatch({ type: FORGOT_PASSWORD_REQUEST });
 
-    console.log("EMAIL:", user.email);
-console.log("RESET URL:", resetPasswordUrl);
-
-
     const { data } = await API.post(
       "/password/forgot",
-      { email }, // ✅ JSON BODY
+      { email }, // ✅ correct JSON body
       {
         headers: {
           "Content-Type": "application/json",

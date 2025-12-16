@@ -106,7 +106,9 @@ exports.forgotPassword = asyncErrorHandler(async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
 
     // ✅ IMPORTANT: frontend reset URL (NOT backend host)
-    const resetPasswordUrl = `https://intelli-cart.vercel.app/password/reset/${resetToken}`;
+    const resetPasswordUrl =
+  `https://intelli-cart.vercel.app/password/reset/${resetToken}`;
+
 
     try {
         await sendEmail({
