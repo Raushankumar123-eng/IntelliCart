@@ -32,6 +32,11 @@ export const addItemsToCart =
     );
   };
 
+
+  export const updateCartQuantity = (id, qty) => async (dispatch, getState) => {
+  dispatch(addItemsToCart(id, qty));
+};
+
 export const removeItemsFromCart = (id) => (dispatch, getState) => {
   dispatch({ type: REMOVE_FROM_CART, payload: id });
 
