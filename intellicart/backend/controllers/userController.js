@@ -4,7 +4,7 @@ const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 
 /* ===================== FORGOT PASSWORD ===================== */
-exports.forgotPassword = async (req, res, next) => {
+exports.forgotPassword = asyncErrorHandler(async (req, res, next) => {
   const { email } = req.body;
 
   if (!email) {
@@ -12,30 +12,30 @@ exports.forgotPassword = async (req, res, next) => {
   }
 
   const user = await User.findOne({ email });
-
   if (!user) {
-    return next(new ErrorHandler("User not found", 404));
+    return next(new ErrorHandler("User Not Found", 404));
   }
 
-  // generate token
   const resetToken = user.getResetPasswordToken();
   await user.save({ validateBeforeSave: false });
 
-  const resetUrl = `https://intelli-cart.vercel.app/password/reset/${resetToken}`;
+  const resetPasswordUrl =
+    `https://intelli-cart.vercel.app/password/reset/${resetToken}`;
 
   await sendEmail({
     email: user.email,
     templateId: process.env.SENDGRID_RESET_TEMPLATEID,
     data: {
-      reset_url: resetUrl, // must match {{reset_url}}
+      reset_url: resetPasswordUrl, // 👈 EXACT name
     },
   });
 
   res.status(200).json({
     success: true,
-    message: "Password reset email sent successfully",
+    message: "Reset password email sent successfully",
   });
-};
+});
+
 
 /* ===================== RESET PASSWORD ===================== */
 exports.resetPassword = async (req, res, next) => {
