@@ -28,8 +28,17 @@ router.get("/me", isAuthenticatedUser, getUserDetails);
 router.put("/me/update", isAuthenticatedUser, updateProfile);
 
 // ==================== PASSWORD ====================
-router.post("/password/forgot", forgotPassword);
-router.put("/password/reset/:token", resetPassword);
+router.post(
+  "/password/forgot",
+  asyncErrorHandler(forgotPassword)
+);
+
+router.put(
+  "/password/reset/:token",
+  asyncErrorHandler(resetPassword)
+);
+
+module.exports = router;
 router.put("/password/update", isAuthenticatedUser, updatePassword);
 
 // ==================== ADMIN ====================
