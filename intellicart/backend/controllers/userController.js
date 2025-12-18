@@ -2,6 +2,7 @@ const User = require("../models/userModel");
 const ErrorHandler = require("../utils/errorHandler");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
+const asyncErrorHandler = require('../middlewares/asyncErrorHandler');
 
 /* ===================== FORGOT PASSWORD ===================== */
 exports.forgotPassword = asyncErrorHandler(async (req, res, next) => {
