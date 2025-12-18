@@ -87,7 +87,6 @@ exports.getUserDetails = asyncErrorHandler(async (req, res, next) => {
 });
 
 // Forgot Password
-// userController.js
 exports.forgotPassword = async (req, res, next) => {
   const { email } = req.body;
 
@@ -101,21 +100,10 @@ exports.forgotPassword = async (req, res, next) => {
     return next(new ErrorHandler("User Not Found", 404));
   }
 
-  const resetToken = user.getResetPasswordToken();
-  await user.save({ validateBeforeSave: false });
-
-  const resetPasswordUrl =
-    `https://intelli-cart.vercel.app/password/reset/${resetToken}`;
-
-  await sendEmail({
-    email: user.email,
-    templateId: process.env.SENDGRID_RESET_TEMPLATEID,
-    data: { reset_url: resetPasswordUrl },
-  });
-
-  res.status(200).json({
+  // ❌ SENDGRID TEMP DISABLE
+  return res.status(200).json({
     success: true,
-    message: "Reset password email sent successfully",
+    message: "FORGOT PASSWORD API WORKING (EMAIL SKIPPED)",
   });
 };
 
