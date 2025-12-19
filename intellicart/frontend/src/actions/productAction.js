@@ -4,42 +4,53 @@ import {
   ALL_PRODUCTS_REQUEST,
   ALL_PRODUCTS_SUCCESS,
   ALL_PRODUCTS_FAIL,
+
   PRODUCT_DETAILS_REQUEST,
   PRODUCT_DETAILS_SUCCESS,
   PRODUCT_DETAILS_FAIL,
+
   NEW_PRODUCT_REQUEST,
   NEW_PRODUCT_SUCCESS,
   NEW_PRODUCT_FAIL,
+
   DELETE_PRODUCT_REQUEST,
   DELETE_PRODUCT_SUCCESS,
   DELETE_PRODUCT_FAIL,
+
   UPDATE_PRODUCT_REQUEST,
   UPDATE_PRODUCT_SUCCESS,
   UPDATE_PRODUCT_FAIL,
+
   ADMIN_PRODUCTS_REQUEST,
   ADMIN_PRODUCTS_SUCCESS,
   ADMIN_PRODUCTS_FAIL,
+
   NEW_REVIEW_REQUEST,
   NEW_REVIEW_SUCCESS,
   NEW_REVIEW_FAIL,
+
   CLEAR_ERRORS,
+
   SIMILAR_PRODUCTS_REQUEST,
   SIMILAR_PRODUCTS_SUCCESS,
   SIMILAR_PRODUCTS_FAIL,
+
   ALL_REVIEWS_REQUEST,
   ALL_REVIEWS_SUCCESS,
   ALL_REVIEWS_FAIL,
+
   DELETE_REVIEW_REQUEST,
   DELETE_REVIEW_SUCCESS,
   DELETE_REVIEW_FAIL,
+
   SLIDER_PRODUCTS_REQUEST,
   SLIDER_PRODUCTS_SUCCESS,
   SLIDER_PRODUCTS_FAIL,
 } from "../constants/productConstants";
 
-// =============================
-// Get All Products (User)
-// =============================
+/* =====================================================
+   Get All Products (User)
+===================================================== */
 export const getProducts =
   (
     keyword = "",
@@ -52,17 +63,15 @@ export const getProducts =
     try {
       dispatch({ type: ALL_PRODUCTS_REQUEST });
 
-      // Build query string
-      let link = /products?;
+      let link = `/products?page=${page}&price[gte]=${price[0]}&price[lte]=${price[1]}&ratings[gte]=${ratings}`;
 
-      if (keyword.trim() !== "") link += keyword=${keyword}&;
-      if (category) link += category=${category}&;
+      if (keyword.trim() !== "") {
+        link += `&keyword=${keyword}`;
+      }
 
-      link +=
-        price[gte]=${price[0]}&
-        price[lte]=${price[1]}&
-        ratings[gte]=${ratings}&
-        page=${page};
+      if (category) {
+        link += `&category=${category}`;
+      }
 
       const { data } = await API.get(link);
 
@@ -79,14 +88,14 @@ export const getProducts =
     }
   };
 
-// =============================
-// Product Details
-// =============================
+/* =====================================================
+   Product Details
+===================================================== */
 export const getProductDetails = (id) => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_DETAILS_REQUEST });
 
-    const { data } = await API.get(/product/${id});
+    const { data } = await API.get(`/product/${id}`);
 
     dispatch({
       type: PRODUCT_DETAILS_SUCCESS,
@@ -101,9 +110,9 @@ export const getProductDetails = (id) => async (dispatch) => {
   }
 };
 
-// =============================
-// Admin — All Products
-// =============================
+/* =====================================================
+   Admin — All Products
+===================================================== */
 export const getAdminProducts = () => async (dispatch) => {
   try {
     dispatch({ type: ADMIN_PRODUCTS_REQUEST });
@@ -112,7 +121,7 @@ export const getAdminProducts = () => async (dispatch) => {
 
     dispatch({
       type: ADMIN_PRODUCTS_SUCCESS,
-      payload: data.products, // ✅ ARRAY ONLY
+      payload: data.products,
     });
   } catch (error) {
     dispatch({
@@ -124,14 +133,17 @@ export const getAdminProducts = () => async (dispatch) => {
   }
 };
 
-// =============================
-// Admin — Create Product
-// =============================
+/* =====================================================
+   Admin — Create Product
+===================================================== */
 export const createProduct = (productData) => async (dispatch) => {
   try {
     dispatch({ type: NEW_PRODUCT_REQUEST });
 
-    const { data } = await API.post(/admin/product/new, productData);
+    const { data } = await API.post(
+      "/admin/product/new",
+      productData
+    );
 
     dispatch({
       type: NEW_PRODUCT_SUCCESS,
@@ -147,37 +159,43 @@ export const createProduct = (productData) => async (dispatch) => {
   }
 };
 
-// =============================
-// Update Product
-// =============================
-export const updateProduct = (id, productData) => async (dispatch) => {
-  try {
-    dispatch({ type: UPDATE_PRODUCT_REQUEST });
+/* =====================================================
+   Admin — Update Product
+===================================================== */
+export const updateProduct =
+  (id, productData) => async (dispatch) => {
+    try {
+      dispatch({ type: UPDATE_PRODUCT_REQUEST });
 
-    const { data } = await API.put(/admin/product/${id}, productData);
+      const { data } = await API.put(
+        `/admin/product/${id}`,
+        productData
+      );
 
-    dispatch({
-      type: UPDATE_PRODUCT_SUCCESS,
-      payload: data.success,
-    });
-  } catch (error) {
-    dispatch({
-      type: UPDATE_PRODUCT_FAIL,
-      payload:
-        error.response?.data?.message ||
-        "Failed to update product",
-    });
-  }
-};
+      dispatch({
+        type: UPDATE_PRODUCT_SUCCESS,
+        payload: data.success,
+      });
+    } catch (error) {
+      dispatch({
+        type: UPDATE_PRODUCT_FAIL,
+        payload:
+          error.response?.data?.message ||
+          "Failed to update product",
+      });
+    }
+  };
 
-// =============================
-// Delete Product
-// =============================
+/* =====================================================
+   Admin — Delete Product
+===================================================== */
 export const deleteProduct = (id) => async (dispatch) => {
   try {
     dispatch({ type: DELETE_PRODUCT_REQUEST });
 
-    const { data } = await API.delete(/admin/product/${id});
+    const { data } = await API.delete(
+      `/admin/product/${id}`
+    );
 
     dispatch({
       type: DELETE_PRODUCT_SUCCESS,
@@ -193,15 +211,15 @@ export const deleteProduct = (id) => async (dispatch) => {
   }
 };
 
-// =============================
-// Similar Products
-// =============================
+/* =====================================================
+   Similar Products
+===================================================== */
 export const getSimilarProducts = (category) => async (dispatch) => {
   try {
     dispatch({ type: SIMILAR_PRODUCTS_REQUEST });
 
     const { data } = await API.get(
-      /products?category=${encodeURIComponent(category)}
+      `/products?category=${encodeURIComponent(category)}`
     );
 
     dispatch({
@@ -218,14 +236,16 @@ export const getSimilarProducts = (category) => async (dispatch) => {
   }
 };
 
-// =============================
-// Get All Reviews
-// =============================
+/* =====================================================
+   Get All Reviews
+===================================================== */
 export const getAllReviews = (productId) => async (dispatch) => {
   try {
     dispatch({ type: ALL_REVIEWS_REQUEST });
 
-    const { data } = await API.get(/reviews?id=${productId});
+    const { data } = await API.get(
+      `/reviews?id=${productId}`
+    );
 
     dispatch({
       type: ALL_REVIEWS_SUCCESS,
@@ -241,34 +261,35 @@ export const getAllReviews = (productId) => async (dispatch) => {
   }
 };
 
-// =============================
-// Delete Review
-// =============================
-export const deleteReview = (reviewId, productId) => async (dispatch) => {
-  try {
-    dispatch({ type: DELETE_REVIEW_REQUEST });
+/* =====================================================
+   Delete Review
+===================================================== */
+export const deleteReview =
+  (reviewId, productId) => async (dispatch) => {
+    try {
+      dispatch({ type: DELETE_REVIEW_REQUEST });
 
-    const { data } = await API.delete(
-      /reviews?id=${reviewId}&productId=${productId}
-    );
+      const { data } = await API.delete(
+        `/reviews?id=${reviewId}&productId=${productId}`
+      );
 
-    dispatch({
-      type: DELETE_REVIEW_SUCCESS,
-      payload: data.success,
-    });
-  } catch (error) {
-    dispatch({
-      type: DELETE_REVIEW_FAIL,
-      payload:
-        error.response?.data?.message ||
-        "Failed to delete review",
-    });
-  }
-};
+      dispatch({
+        type: DELETE_REVIEW_SUCCESS,
+        payload: data.success,
+      });
+    } catch (error) {
+      dispatch({
+        type: DELETE_REVIEW_FAIL,
+        payload:
+          error.response?.data?.message ||
+          "Failed to delete review",
+      });
+    }
+  };
 
-// =============================
-// Slider Products
-// =============================
+/* =====================================================
+   Slider Products
+===================================================== */
 export const getSliderProducts = () => async (dispatch) => {
   try {
     dispatch({ type: SLIDER_PRODUCTS_REQUEST });
@@ -289,14 +310,17 @@ export const getSliderProducts = () => async (dispatch) => {
   }
 };
 
-// =============================
-// New Review
-// =============================
+/* =====================================================
+   New Review
+===================================================== */
 export const newReview = (reviewData) => async (dispatch) => {
   try {
     dispatch({ type: NEW_REVIEW_REQUEST });
 
-    const { data } = await API.put(/review, reviewData);
+    const { data } = await API.put(
+      "/review",
+      reviewData
+    );
 
     dispatch({
       type: NEW_REVIEW_SUCCESS,
@@ -312,9 +336,9 @@ export const newReview = (reviewData) => async (dispatch) => {
   }
 };
 
-// =============================
-// Clear Errors
-// =============================
+/* =====================================================
+   Clear Errors
+===================================================== */
 export const clearErrors = () => (dispatch) => {
   dispatch({ type: CLEAR_ERRORS });
 };
