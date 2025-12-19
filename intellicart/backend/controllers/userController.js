@@ -2,41 +2,42 @@ const User = require("../models/userModel");
 const ErrorHandler = require("../utils/errorHandler");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
-const asyncErrorHandler = require('../middlewares/asyncErrorHandler');
 
 /* ===================== FORGOT PASSWORD ===================== */
-exports.forgotPassword = asyncErrorHandler(async (req, res, next) => {
-  const { email } = req.body;
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
 
-  if (!email) {
-    return next(new ErrorHandler("Email is required", 400));
+    if (!email) {
+      return next(new ErrorHandler("Email is required", 400));
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return next(new ErrorHandler("User Not Found", 404));
+    }
+
+    const resetToken = user.getResetPasswordToken();
+    await user.save({ validateBeforeSave: false });
+
+    const resetPasswordUrl =
+      `https://intelli-cart.vercel.app/password/reset/${resetToken}`;
+
+    await sendEmail({
+      email: user.email,
+      templateId: process.env.SENDGRID_RESET_TEMPLATEID,
+      data: { reset_url: resetPasswordUrl },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Reset password email sent successfully",
+    });
+
+  } catch (error) {
+    next(error);
   }
-
-  const user = await User.findOne({ email });
-  if (!user) {
-    return next(new ErrorHandler("User Not Found", 404));
-  }
-
-  const resetToken = user.getResetPasswordToken();
-  await user.save({ validateBeforeSave: false });
-
-  const resetPasswordUrl =
-    `https://intelli-cart.vercel.app/password/reset/${resetToken}`;
-
-  await sendEmail({
-    email: user.email,
-    templateId: process.env.SENDGRID_RESET_TEMPLATEID,
-    data: {
-      reset_url: resetPasswordUrl, // 👈 EXACT name
-    },
-  });
-
-  res.status(200).json({
-    success: true,
-    message: "Reset password email sent successfully",
-  });
-});
-
+};
 
 /* ===================== RESET PASSWORD ===================== */
 exports.resetPassword = async (req, res, next) => {
