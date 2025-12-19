@@ -55,19 +55,7 @@ export const getProducts = (
     if (keyword.trim() !== "") link += `keyword=${keyword}&`;
     if (category) link += `category=${category}&`;
 
-    // ✅ SAFE PRICE HANDLING
-    const minPrice = Number(price[0]);
-    const maxPrice = Number(price[1]);
-
-    if (!Number.isNaN(minPrice) && !Number.isNaN(maxPrice)) {
-      link += `price[gte]=${minPrice}&price[lte]=${maxPrice}&`;
-    }
-
-    if (ratings > 0) {
-      link += `ratings[gte]=${ratings}&`;
-    }
-
-    link += `page=${page}`;
+    link += `price[gte]=${price[0]}&price[lte]=${price[1]}&ratings[gte]=${ratings}&page=${page}`;
 
     const { data } = await API.get(link);
 
