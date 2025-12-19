@@ -58,27 +58,40 @@ exports.getUserDetails = asyncErrorHandler(async (req, res) => {
 /* ================= FORGOT PASSWORD ================= */
 exports.forgotPassword = asyncErrorHandler(async (req, res, next) => {
   const { email } = req.body;
-  if (!email) return next(new ErrorHandler("Email is required", 400));
+
+  if (!email) {
+    return next(new ErrorHandler("Email is required", 400));
+  }
 
   const user = await User.findOne({ email });
-  if (!user) return next(new ErrorHandler("User Not Found", 404));
+  if (!user) {
+    return next(new ErrorHandler("User Not Found", 404));
+  }
 
   const resetToken = user.getResetPasswordToken();
   await user.save({ validateBeforeSave: false });
 
-  const resetUrl = `https://intelli-cart.vercel.app/password/reset/${resetToken}`;
+  const resetUrl =
+    `https://intelli-cart.vercel.app/password/reset/${resetToken}`;
 
   try {
     await sendEmail({
       email: user.email,
       templateId: process.env.SENDGRID_RESET_TEMPLATEID,
-      data: { reset_url: resetUrl },
+      data: {
+        reset_url: resetUrl, // MUST match template
+      },
     });
-  } catch (err) {
+  } catch (error) {
+    console.error("❌ SENDGRID FAILED:", error.response?.body || error.message);
+
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
     await user.save({ validateBeforeSave: false });
-    return next(new ErrorHandler("Email could not be sent", 500));
+
+    return next(
+      new ErrorHandler("Failed to send reset password email", 500)
+    );
   }
 
   res.status(200).json({
@@ -86,6 +99,7 @@ exports.forgotPassword = asyncErrorHandler(async (req, res, next) => {
     message: "Reset password email sent successfully",
   });
 });
+
 
 /* ================= RESET PASSWORD ================= */
 exports.resetPassword = asyncErrorHandler(async (req, res, next) => {
