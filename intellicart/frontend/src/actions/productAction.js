@@ -52,26 +52,28 @@ export const getProducts = (
 
     let link = `/products?`;
 
-    if (keyword && keyword.trim() !== "") {
+    if (keyword?.trim()) {
       link += `keyword=${encodeURIComponent(keyword)}&`;
     }
 
-    if (category && category.trim() !== "") {
+    if (category?.trim()) {
       link += `category=${encodeURIComponent(category)}&`;
     }
 
-    // 🔴 PRICE FILTER — ONLY if valid
+    // 🔥 PRICE — only if user touched slider
     if (
       Array.isArray(price) &&
       price.length === 2 &&
+      price[0] !== null &&
+      price[1] !== null &&
       price[0] !== "" &&
       price[1] !== ""
     ) {
       link += `price[gte]=${Number(price[0])}&price[lte]=${Number(price[1])}&`;
     }
 
-    // 🔴 RATINGS — only if > 0
-    if (ratings > 0) {
+    // 🔥 RATINGS — only if > 0
+    if (Number(ratings) > 0) {
       link += `ratings[gte]=${ratings}&`;
     }
 
@@ -86,10 +88,12 @@ export const getProducts = (
   } catch (error) {
     dispatch({
       type: ALL_PRODUCTS_FAIL,
-      payload: error.response?.data?.message || "Failed to load products",
+      payload:
+        error.response?.data?.message || "Failed to load products",
     });
   }
 };
+
 
 
 /* =============================
