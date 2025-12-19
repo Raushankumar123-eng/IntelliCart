@@ -57,7 +57,7 @@ export const getProducts = (
         if (keyword.trim() !== "") link += `keyword=${keyword}&`;
         if (category) link += `category=${category}&`;
 
-        link += `price[gte]=${price[0]}&price[lte]=${price[1]}&ratings[gte]=${ratings}&page=${page}`;
+        link += `price[gte]=${price[0]}&price[lte]=${price[1]}&page=${page}`;
 
         const { data } = await API.get(link);
 
