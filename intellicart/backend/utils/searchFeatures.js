@@ -39,10 +39,7 @@ class SearchFeatures {
     for (const rawKey of Object.keys(queryCopy)) {
       const value = queryCopy[rawKey];
 
-       if (rawKey.startsWith("ratings") && Number(value) === 0) {
-    continue;
-  }
-
+  
       // If key like price[gte]
       const bracketMatch = rawKey.match(/^([^\[]+)\[([^\]]+)\]$/);
       if (bracketMatch) {
