@@ -33,13 +33,7 @@ router.put("/password/reset/:token", resetPassword);
 router.put("/password/update", isAuthenticatedUser, updatePassword);
 
 // ADMIN
-router.get(
-  "/admin/users",
-  isAuthenticatedUser,
-  authorizeRoles("admin"),
-  getAllUsers
-);
-
+router.get("/admin/users", isAuthenticatedUser, authorizeRoles("admin"), getAllUsers);
 router
   .route("/admin/user/:id")
   .get(isAuthenticatedUser, authorizeRoles("admin"), getSingleUser)
