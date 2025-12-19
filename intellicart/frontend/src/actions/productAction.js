@@ -50,30 +50,34 @@ export const getProducts = (
   try {
     dispatch({ type: ALL_PRODUCTS_REQUEST });
 
-    let query = `/products?`;
+    let link = `/products?`;
 
-    // keyword search
     if (keyword && keyword.trim() !== "") {
-      query += `keyword=${encodeURIComponent(keyword)}&`;
+      link += `keyword=${encodeURIComponent(keyword)}&`;
     }
 
-    // category filter
     if (category && category.trim() !== "") {
-      query += `category=${encodeURIComponent(category)}&`;
+      link += `category=${encodeURIComponent(category)}&`;
     }
 
-    // price range (always valid)
-    query += `price[gte]=${price[0]}&price[lte]=${price[1]}&`;
+    // 🔴 PRICE FILTER — ONLY if valid
+    if (
+      Array.isArray(price) &&
+      price.length === 2 &&
+      price[0] !== "" &&
+      price[1] !== ""
+    ) {
+      link += `price[gte]=${Number(price[0])}&price[lte]=${Number(price[1])}&`;
+    }
 
-    // ratings only if > 0
+    // 🔴 RATINGS — only if > 0
     if (ratings > 0) {
-      query += `ratings[gte]=${ratings}&`;
+      link += `ratings[gte]=${ratings}&`;
     }
 
-    // pagination
-    query += `page=${page}`;
+    link += `page=${page}`;
 
-    const { data } = await API.get(query);
+    const { data } = await API.get(link);
 
     dispatch({
       type: ALL_PRODUCTS_SUCCESS,
@@ -82,11 +86,11 @@ export const getProducts = (
   } catch (error) {
     dispatch({
       type: ALL_PRODUCTS_FAIL,
-      payload:
-        error.response?.data?.message || "Failed to load products",
+      payload: error.response?.data?.message || "Failed to load products",
     });
   }
 };
+
 
 /* =============================
    PRODUCT DETAILS
