@@ -98,65 +98,59 @@ const NewProduct = () => {
         });
     }
 
-    const newProductSubmitHandler = (e) => {
-        e.preventDefault();
+const newProductSubmitHandler = (e) => {
+    e.preventDefault();
 
-        // required field checks
-        if (highlights.length <= 0) {
-            enqueueSnackbar("Add Highlights", { variant: "warning" });
-            return;
-        }
-        if (!logo) {
-            enqueueSnackbar("Add Brand Logo", { variant: "warning" });
-            return;
-        }
-        if (specs.length <= 1) {
-            enqueueSnackbar("Add Minimum 2 Specifications", { variant: "warning" });
-            return;
-        }
-        if (images.length <= 0) {
-            enqueueSnackbar("Add Product Images", { variant: "warning" });
-            return;
-        }
-
-        const formData = new FormData();
-
-        formData.set("name", name);
-        formData.set("description", description);
-        formData.set("price", price);
-        formData.set("cuttedPrice", cuttedPrice);
-        formData.set("category", category);
-        formData.set("stock", stock);
-        formData.set("warranty", warranty);
-        formData.set("brandname", brand);
-        formData.set("logo", logo);
-
-        images.forEach((image) => {
-            formData.append("images", image);
-        });
-
-        highlights.forEach((h) => {
-            formData.append("highlights", h);
-        });
-
-        specs.forEach((s) => {
-            formData.append("specifications", JSON.stringify(s));
-        });
-
-        dispatch(createProduct(formData));
+    if (!brand.trim()) {
+        enqueueSnackbar("Brand name is required", { variant: "warning" });
+        return;
+    }
+    if (!logo) {
+        enqueueSnackbar("Brand logo is required", { variant: "warning" });
+        return;
+    }
+    if (highlights.length === 0) {
+        enqueueSnackbar("Add Highlights", { variant: "warning" });
+        return;
+    }
+    if (specs.length < 2) {
+        enqueueSnackbar("Add minimum 2 specifications", { variant: "warning" });
+        return;
+    }
+    if (images.length === 0) {
+        enqueueSnackbar("Add product images", { variant: "warning" });
+        return;
     }
 
-    useEffect(() => {
-        if (error) {
-            enqueueSnackbar(error, { variant: "error" });
-            dispatch(clearErrors());
-        }
-        if (success) {
-            enqueueSnackbar("Product Created", { variant: "success" });
-            dispatch({ type: NEW_PRODUCT_RESET });
-            navigate("/admin/products");
-        }
-    }, [dispatch, error, success, navigate, enqueueSnackbar]);
+    // ✅ FINAL PAYLOAD (THIS FIXES EVERYTHING)
+    const productData = {
+        name,
+        description,
+        price,
+        cuttedPrice,
+        category,
+        stock,
+        warranty,
+
+        highlights,
+        specifications: specs,
+
+        images, // base64 array
+
+        brand: {
+            name: brand,
+            logo: {
+                public_id: "brand-logo",
+                url: logo, // base64
+            },
+        },
+    };
+
+    console.log("FINAL PRODUCT DATA 👉", productData);
+
+    dispatch(createProduct(productData));
+};
+
 
     return (
         <>

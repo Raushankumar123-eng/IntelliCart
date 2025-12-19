@@ -141,19 +141,15 @@ export const updatePassword = (passwords) => async (dispatch) => {
 };
 
 // Forgot Password
-// Forgot Password
+
 export const forgotPassword = (email) => async (dispatch) => {
   try {
     dispatch({ type: FORGOT_PASSWORD_REQUEST });
 
     const { data } = await API.post(
       "/password/forgot",
-      { email }, // ✅ correct JSON body
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+      { email },
+      { headers: { "Content-Type": "application/json" } }
     );
 
     dispatch({
@@ -164,8 +160,11 @@ export const forgotPassword = (email) => async (dispatch) => {
     dispatch({
       type: FORGOT_PASSWORD_FAIL,
       payload:
-        error.response?.data?.message ||
-        "Failed to send reset password email",
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+          ? error.response.data.message
+          : "Failed to send reset password email",
     });
   }
 };
