@@ -52,8 +52,14 @@ export const getProducts = (
 
     let link = `/products?`;
 
-    if (keyword.trim() !== "") link += `keyword=${keyword}&`;
-    if (category) link += `category=${category}&`;
+    if (keyword.trim()) {
+      link += `keyword=${keyword}&`;
+    }
+
+    if (category.trim()) {
+      // ✅ SEND RAW CATEGORY STRING
+      link += `category=${category}&`;
+    }
 
     link += `price[gte]=${price[0]}&price[lte]=${price[1]}&ratings[gte]=${ratings}&page=${page}`;
 
@@ -70,6 +76,7 @@ export const getProducts = (
     });
   }
 };
+
 
 
 
