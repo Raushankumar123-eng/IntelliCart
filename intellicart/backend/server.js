@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 🚀 Final CORS Fix for Cross-Site Cookies
-// 🚀 Final CORS Fix for Cross-Site Cookies
+
 app.use(
   cors({
     origin: [

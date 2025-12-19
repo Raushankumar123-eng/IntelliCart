@@ -3,6 +3,7 @@ const Product = require("../models/productModel");
 const asyncErrorHandler = require("../middlewares/asyncErrorHandler");
 const SearchFeatures = require("../utils/searchFeatures");
 const ErrorHandler = require("../utils/errorHandler");
+const cloudinary = require("cloudinary");
 
 // ==========================
 // GET ALL PRODUCTS (User)
