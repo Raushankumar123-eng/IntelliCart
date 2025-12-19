@@ -25,63 +25,65 @@ class SearchFeatures {
   // category=Mobiles
   // price[gte]=1000
   // ratings[gte]=4
-  filter() {
-    // shallow copy of query params
-    const queryCopy = { ...this.queryStr };
+ filter() {
+  const queryCopy = { ...this.queryStr };
+  const removeFields = ["keyword", "page", "limit"];
+  removeFields.forEach((f) => delete queryCopy[f]);
 
-    // remove control params
-    const removeFields = ["keyword", "page", "limit"];
-    removeFields.forEach((f) => delete queryCopy[f]);
+  const filterObj = {};
 
-    // Build new filter object, converting bracket params to mongo operators
-    const filterObj = {};
+  for (const rawKey of Object.keys(queryCopy)) {
+    const value = queryCopy[rawKey];
 
-    for (const rawKey of Object.keys(queryCopy)) {
-      const value = queryCopy[rawKey];
-
-       if (rawKey.startsWith("ratings") && Number(value) === 0) {
-    continue;
-  }
-
-  if (
-  rawKey.startsWith("price") &&
-  (value === "" || value === null || isNaN(Number(value)))
-) {
-  continue;
-}
-
-      // If key like price[gte]
-      const bracketMatch = rawKey.match(/^([^\[]+)\[([^\]]+)\]$/);
-      if (bracketMatch) {
-        const root = bracketMatch[1]; // e.g. "price"
-        const op = bracketMatch[2]; // e.g. "gte"
-
-        if (!filterObj[root]) filterObj[root] = {};
-
-        // convert to numeric if possible
-        const parsed = this._tryParseNumber(value);
-        filterObj[root][`$${op}`] = parsed;
-      } else {
-        // normal key, e.g. category, brand, stock, etc.
-        // For category use regex match (case-insensitive)
-        if (rawKey === "category") {
-          if (String(value).trim() !== "") {
-            filterObj.category = {
-              $regex: String(value).trim(),
-              $options: "i",
-            };
-          }
-        } else {
-          // numeric cast when appropriate
-          filterObj[rawKey] = this._tryParseNumber(value);
-        }
-      }
+    // ratings guard
+    if (rawKey.startsWith("ratings")) {
+      if (Number(value) <= 0) continue;
     }
 
-    // apply final filter object to query
-    this.query = this.query.find(filterObj);
-    return this;
+    // price guard
+    if (rawKey.startsWith("price")) {
+      const num = Number(value);
+      if (isNaN(num)) continue;
+      if (num === 0 || num === 200000) continue;
+    }
+
+    const bracketMatch = rawKey.match(/^([^\[]+)\[([^\]]+)\]$/);
+
+    if (bracketMatch) {
+      const root = bracketMatch[1];
+      const op = bracketMatch[2];
+
+      if (!filterObj[root]) filterObj[root] = {};
+
+      filterObj[root][`$${op}`] = this._tryParseNumber(value);
+    } else {
+      if (rawKey === "category") {
+        if (String(value).trim()) {
+          filterObj.category = {
+            $regex: String(value).trim(),
+            $options: "i",
+          };
+        }
+      } else {
+        filterObj[rawKey] = this._tryParseNumber(value);
+      }
+    }
   }
+
+  // 🔥 remove empty objects
+  for (const key in filterObj) {
+    if (
+      typeof filterObj[key] === "object" &&
+      Object.keys(filterObj[key]).length === 0
+    ) {
+      delete filterObj[key];
+    }
+  }
+
+  this.query = this.query.find(filterObj);
+  return this;
+}
+
 
   // pagination
   pagination(resultPerPage = 12) {
