@@ -67,9 +67,49 @@ exports.getAdminProducts = asyncErrorHandler(async (req, res, next) => {
 // ADMIN — CREATE PRODUCT
 // ==========================
 exports.createProduct = asyncErrorHandler(async (req, res, next) => {
+  req.body.user = req.user.id; // 🔴 REQUIRED
+
+  // 1. images must be array
+  let images = [];
+
+  if (typeof req.body.images === "string") {
+    images.push(req.body.images);
+  } else {
+    images = req.body.images;
+  }
+
+  const imagesLinks = [];
+
+  for (let i = 0; i < images.length; i++) {
+    const result = await cloudinary.v2.uploader.upload(images[i], {
+      folder: "products",
+    });
+
+    imagesLinks.push({
+      public_id: result.public_id,
+      url: result.secure_url,
+    });
+  }
+
+  req.body.images = imagesLinks;
+
+  // 2. brand validation
+  if (!req.body.brand || !req.body.brand.name) {
+    return next(new ErrorHandler("Brand name is required", 400));
+  }
+
+  if (!req.body.brand.logo) {
+    return next(new ErrorHandler("Brand logo is required", 400));
+  }
+
   const product = await Product.create(req.body);
-  res.status(201).json({ success: true, product });
+
+  res.status(201).json({
+    success: true,
+    product,
+  });
 });
+
 
 // ==========================
 // ADMIN — UPDATE PRODUCT
