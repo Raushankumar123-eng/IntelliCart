@@ -52,28 +52,18 @@ export const getProducts = (
 
     let link = `/products?`;
 
-    if (keyword?.trim()) {
-      link += `keyword=${encodeURIComponent(keyword)}&`;
+    if (keyword.trim() !== "") link += `keyword=${keyword}&`;
+    if (category) link += `category=${category}&`;
+
+    // ✅ SAFE PRICE HANDLING
+    const minPrice = Number(price[0]);
+    const maxPrice = Number(price[1]);
+
+    if (!Number.isNaN(minPrice) && !Number.isNaN(maxPrice)) {
+      link += `price[gte]=${minPrice}&price[lte]=${maxPrice}&`;
     }
 
-    if (category?.trim()) {
-      link += `category=${encodeURIComponent(category)}&`;
-    }
-
-    // 🔥 PRICE — only if user touched slider
-    if (
-      Array.isArray(price) &&
-      price.length === 2 &&
-      price[0] !== null &&
-      price[1] !== null &&
-      price[0] !== "" &&
-      price[1] !== ""
-    ) {
-      link += `price[gte]=${Number(price[0])}&price[lte]=${Number(price[1])}&`;
-    }
-
-    // 🔥 RATINGS — only if > 0
-    if (Number(ratings) > 0) {
+    if (ratings > 0) {
       link += `ratings[gte]=${ratings}&`;
     }
 
@@ -88,8 +78,7 @@ export const getProducts = (
   } catch (error) {
     dispatch({
       type: ALL_PRODUCTS_FAIL,
-      payload:
-        error.response?.data?.message || "Failed to load products",
+      payload: error.response?.data?.message || "Failed to load products",
     });
   }
 };
