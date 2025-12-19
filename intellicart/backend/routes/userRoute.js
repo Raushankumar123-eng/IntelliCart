@@ -28,7 +28,7 @@ router.get("/me", isAuthenticatedUser, getUserDetails);
 router.put("/me/update", isAuthenticatedUser, updateProfile);
 
 // PASSWORD
-console.log("forgotPassword in route:", typeof forgotPassword);
+router.post("/password/forgot", forgotPassword);
 router.put("/password/reset/:token", resetPassword);
 router.put("/password/update", isAuthenticatedUser, updatePassword);
 
