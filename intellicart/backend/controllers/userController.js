@@ -13,21 +13,37 @@ exports.forgotPassword = async (req, res, next) => {
     }
 
     const user = await User.findOne({ email });
+
     if (!user) {
       return next(new ErrorHandler("User Not Found", 404));
     }
 
+    // Generate token
     const resetToken = user.getResetPasswordToken();
+
     await user.save({ validateBeforeSave: false });
 
     const resetPasswordUrl =
       `https://intelli-cart.vercel.app/password/reset/${resetToken}`;
 
-    await sendEmail({
-      email: user.email,
-      templateId: process.env.SENDGRID_RESET_TEMPLATEID,
-      data: { reset_url: resetPasswordUrl },
-    });
+    try {
+      await sendEmail({
+        email: user.email,
+        templateId: process.env.SENDGRID_RESET_TEMPLATEID,
+        data: {
+          reset_url: resetPasswordUrl, // ✅ must match SendGrid template
+        },
+      });
+    } catch (mailError) {
+      // rollback token if email fails
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save({ validateBeforeSave: false });
+
+      return next(
+        new ErrorHandler("Email could not be sent. Try again later.", 500)
+      );
+    }
 
     res.status(200).json({
       success: true,
@@ -35,9 +51,10 @@ exports.forgotPassword = async (req, res, next) => {
     });
 
   } catch (error) {
-    next(error);
+    return next(new ErrorHandler(error.message, 500));
   }
 };
+
 
 /* ===================== RESET PASSWORD ===================== */
 exports.resetPassword = async (req, res, next) => {

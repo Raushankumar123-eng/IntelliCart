@@ -28,21 +28,9 @@ router.get("/me", isAuthenticatedUser, getUserDetails);
 router.put("/me/update", isAuthenticatedUser, updateProfile);
 
 // PASSWORD
-router.post(
-  "/password/forgot",
-  asyncErrorHandler(forgotPassword)
-);
-
-router.put(
-  "/password/reset/:token",
-  asyncErrorHandler(resetPassword)
-);
-
-router.put(
-  "/password/update",
-  isAuthenticatedUser,
-  asyncErrorHandler(updatePassword)
-);
+router.post("/password/forgot", forgotPassword);
+router.put("/password/reset/:token", resetPassword);
+router.put("/password/update", isAuthenticatedUser, updatePassword);
 
 // ADMIN
 router.get(
