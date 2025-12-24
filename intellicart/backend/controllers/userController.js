@@ -31,17 +31,25 @@ exports.registerUser = asyncErrorHandler(async (req, res, next) => {
 });
 
 /* ================= LOGIN ================= */
+const sendToken = require("../utils/jwtToken");
+
 exports.loginUser = asyncErrorHandler(async (req, res, next) => {
   const { email, password } = req.body;
-  if (!email || !password)
+
+  if (!email || !password) {
     return next(new ErrorHandler("Please Enter Email & Password", 400));
+  }
 
   const user = await User.findOne({ email }).select("+password");
-  if (!user || !(await user.comparePassword(password)))
-    return next(new ErrorHandler("Invalid Email or Password", 401));
 
-  res.status(200).json({ success: true, user });
+  if (!user || !(await user.comparePassword(password))) {
+    return next(new ErrorHandler("Invalid Email or Password", 401));
+  }
+
+  // ✅ THIS SETS COOKIE
+  sendToken(user, 200, res);
 });
+
 
 /* ================= LOGOUT ================= */
 exports.logoutUser = asyncErrorHandler(async (req, res) => {
