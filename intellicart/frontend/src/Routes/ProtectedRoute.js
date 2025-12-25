@@ -6,7 +6,7 @@ const ProtectedRoute = ({ children, isAdminRoute = false }) => {
     (state) => state.user
   );
 
-  if (loading) return null; // ⬅ IMPORTANT
+  if (loading) return null;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -18,4 +18,7 @@ const ProtectedRoute = ({ children, isAdminRoute = false }) => {
 
   return children;
 };
+
+export default ProtectedRoute;
+
 
