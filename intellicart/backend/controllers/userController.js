@@ -31,7 +31,7 @@ exports.registerUser = asyncErrorHandler(async (req, res, next) => {
 });
 
 /* ================= LOGIN ================= */
-const sendToken = require("../utils/jwtToken");
+const sendToken = require("../utils/sendToken");
 
 exports.loginUser = asyncErrorHandler(async (req, res, next) => {
   const { email, password } = req.body;
