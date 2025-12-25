@@ -82,14 +82,25 @@ export const loadUser = () => async (dispatch) => {
 
     const { data } = await API.get("/me");
 
-    dispatch({ type: LOAD_USER_SUCCESS, payload: data.user });
-  } catch (error) {
     dispatch({
-      type: LOAD_USER_FAIL,
-      payload: error.response?.data?.message || "Unable to load user",
+      type: LOAD_USER_SUCCESS,
+      payload: data.user,
     });
+  } catch (error) {
+    if (error.response?.status === 401) {
+      // User not logged in — this is NOT an error
+      dispatch({ type: LOAD_USER_FAIL });
+    } else {
+      // Real error (server down, 500, etc.)
+      dispatch({
+        type: LOAD_USER_FAIL,
+        payload:
+          error.response?.data?.message || "Unable to load user",
+      });
+    }
   }
 };
+
 
 // Logout User
 export const logoutUser = () => async (dispatch) => {
