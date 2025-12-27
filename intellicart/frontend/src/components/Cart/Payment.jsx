@@ -39,7 +39,7 @@ const Payment = () => {
         try {
             // 1️⃣ Create Razorpay Order (Backend)
             const { data } = await axios.post(
-                "/api/v1/payment/razorpay/order",
+                "/payment/razorpay/order",
                 { totalPrice },
                 { headers: { "Content-Type": "application/json" } }
             );
