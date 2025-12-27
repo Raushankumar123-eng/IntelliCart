@@ -1,14 +1,23 @@
-const express = require('express');
-const { processPayment, paytmResponse, getPaymentStatus } = require('../controllers/paymentController');
-const { isAuthenticatedUser } = require('../middlewares/auth');
-
+const express = require("express");
 const router = express.Router();
 
-router.route('/payment/process').post(processPayment);
-// router.route('/stripeapikey').get(isAuthenticatedUser, sendStripeApiKey);
+const {
+  createRazorpayOrder,
+  verifyRazorpayPayment,
+} = require("../controllers/paymentController");
 
-router.route('/callback').post(paytmResponse);
+const { isAuthenticatedUser } = require("../middleware/auth");
 
-router.route('/payment/status/:id').get(isAuthenticatedUser, getPaymentStatus);
+router.post(
+  "/payment/razorpay/order",
+  isAuthenticatedUser,
+  createRazorpayOrder
+);
+
+router.post(
+  "/payment/razorpay/verify",
+  isAuthenticatedUser,
+  verifyRazorpayPayment
+);
 
 module.exports = router;
