@@ -6,7 +6,7 @@ const {
   verifyRazorpayPayment,
 } = require("../controllers/paymentController");
 
-const { isAuthenticatedUser } = require("../middleware/auth");
+const { isAuthenticatedUser } = require("../middlewares/auth");
 
 router.post("/razorpay/order", isAuthenticatedUser, createRazorpayOrder);
 router.post("/razorpay/verify", isAuthenticatedUser, verifyRazorpayPayment);
