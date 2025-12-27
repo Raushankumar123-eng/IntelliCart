@@ -8,16 +8,8 @@ const {
 
 const { isAuthenticatedUser } = require("../middleware/auth");
 
-router.post(
-  "/payment/razorpay/order",
-  isAuthenticatedUser,
-  createRazorpayOrder
-);
+router.post("/razorpay/order", isAuthenticatedUser, createRazorpayOrder);
+router.post("/razorpay/verify", isAuthenticatedUser, verifyRazorpayPayment);
 
-router.post(
-  "/payment/razorpay/verify",
-  isAuthenticatedUser,
-  verifyRazorpayPayment
-);
 
 module.exports = router;
