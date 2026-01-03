@@ -253,29 +253,28 @@ const NewProduct = () => {
 
                     <div className="flex justify-evenly gap-2 items-center">
                         <TextField
+                            name="title"
                             value={specsInput.title}
                             onChange={handleSpecsChange}
-                            name="title"
                             label="Name"
-                            placeholder="Model No"
-                            variant="outlined"
                             size="small"
                         />
+
                         <TextField
+                            name="description"
                             value={specsInput.description}
                             onChange={handleSpecsChange}
-                            name="description"
                             label="Description"
-                            placeholder="WJDK42DF5"
-                            variant="outlined"
                             size="small"
                         />
+
                         <span
                             onClick={addSpecs}
                             className="py-2 px-6 bg-primary-blue text-white rounded hover:shadow-lg cursor-pointer"
                         >
                             Add
                         </span>
+
                     </div>
 
                     <div className="flex flex-col gap-1.5">
@@ -295,6 +294,7 @@ const NewProduct = () => {
                             </div>
                         ))}
                     </div>
+
 
                     {/* Product Images */}
                     <h2 className="font-medium">Product Images</h2>
