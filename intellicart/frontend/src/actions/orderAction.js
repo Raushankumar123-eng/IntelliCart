@@ -115,7 +115,7 @@ export const getAllOrders = () => async (dispatch) => {
     try {
         dispatch({ type: ALL_ORDERS_REQUEST });
 
-        const { data } = await API.get('/api/v1/admin/orders');
+        const { data } = await API.get('/admin/orders');
 
         dispatch({
             type: ALL_ORDERS_SUCCESS,

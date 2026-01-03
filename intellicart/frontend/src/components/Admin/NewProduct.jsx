@@ -344,7 +344,7 @@ const newProductSubmitHandler = (e) => {
 
                     <div className="flex justify-end">
                         <input form="mainform" type="submit" className="bg-primary-orange uppercase w-1/3 p-3 text-white font-medium rounded shadow hover:shadow-lg cursor-pointer" value="Submit" />
-                        navigate('/admin/products')
+                        
                     </div>
 
                 </div>
