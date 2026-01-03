@@ -188,6 +188,45 @@ const NewProduct = () => {
                         <TextField label="Warranty" type="number" size="small" required value={warranty} onChange={(e) => setWarranty(e.target.value)} />
                     </div>
 
+                    <h2 className="font-medium">Add Highlights</h2>
+
+                    {/* Highlights */}
+                    <div className="flex flex-col gap-2">
+                        <div className="flex justify-between items-center border rounded">
+                            <input
+                                value={highlightInput}
+                                onChange={(e) => setHighlightInput(e.target.value)}
+                                type="text"
+                                placeholder="Highlight"
+                                className="px-2 flex-1 outline-none border-none"
+                            />
+                            <span
+                                onClick={addHighlight}
+                                className="py-2 px-6 bg-primary-blue text-white rounded-r hover:shadow-lg cursor-pointer"
+                            >
+                                Add
+                            </span>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                            {highlights.map((h, i) => (
+                                <div
+                                    key={i}
+                                    className="flex justify-between rounded items-center py-1 px-2 bg-green-50"
+                                >
+                                    <p className="text-green-800 text-sm font-medium">{h}</p>
+                                    <span
+                                        onClick={() => deleteHighlight(i)}
+                                        className="text-red-600 hover:bg-red-100 p-1 rounded-full cursor-pointer"
+                                    >
+                                        <DeleteIcon />
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+
                     <h2 className="font-medium">Brand Details</h2>
 
                     <div className="flex justify-between gap-4 items-start">
