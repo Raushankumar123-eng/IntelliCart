@@ -42,28 +42,12 @@ const NewProduct = () => {
     const [logo, setLogo] = useState("");
     const [logoPreview, setLogoPreview] = useState("");
 
-    // =========================
-    // SUCCESS / ERROR HANDLING
-    // =========================
-    useEffect(() => {
-        if (error) {
-            enqueueSnackbar(error, { variant: "error" });
-            dispatch(clearErrors());
-        }
-
-        if (success) {
-            enqueueSnackbar("Product added successfully", { variant: "success" });
-            dispatch({ type: NEW_PRODUCT_RESET });
-            navigate("/admin/products");
-        }
-    }, [dispatch, error, success, enqueueSnackbar, navigate]);
-
     const handleSpecsChange = (e) => {
         setSpecsInput({ ...specsInput, [e.target.name]: e.target.value });
     }
 
     const addSpecs = () => {
-        if (!specsInput.title.trim() || !specsInput.description.trim()) return;
+        if (!specsInput.title.trim() || !specsInput.title.trim()) return;
         setSpecs([...specs, specsInput]);
         setSpecsInput({ title: "", description: "" });
     }
@@ -75,150 +59,213 @@ const NewProduct = () => {
     }
 
     const deleteHighlight = (index) => {
-        setHighlights(highlights.filter((_, i) => i !== index))
+        setHighlights(highlights.filter((h, i) => i !== index))
     }
 
     const deleteSpec = (index) => {
-        setSpecs(specs.filter((_, i) => i !== index))
+        setSpecs(specs.filter((s, i) => i !== index))
     }
 
     const handleLogoChange = (e) => {
         const reader = new FileReader();
+
         reader.onload = () => {
             if (reader.readyState === 2) {
                 setLogoPreview(reader.result);
                 setLogo(reader.result);
             }
         };
+
         reader.readAsDataURL(e.target.files[0]);
     }
 
     const handleProductImageChange = (e) => {
         const files = Array.from(e.target.files);
+
         setImages([]);
         setImagesPreview([]);
 
         files.forEach((file) => {
             const reader = new FileReader();
+
             reader.onload = () => {
                 if (reader.readyState === 2) {
-                    setImagesPreview((old) => [...old, reader.result]);
-                    setImages((old) => [...old, reader.result]);
+                    setImagesPreview((oldImages) => [...oldImages, reader.result]);
+                    setImages((oldImages) => [...oldImages, reader.result]);
                 }
             }
             reader.readAsDataURL(file);
         });
     }
 
-    const newProductSubmitHandler = (e) => {
-        e.preventDefault();
+const newProductSubmitHandler = (e) => {
+    e.preventDefault();
 
-        if (!brand.trim()) {
-            enqueueSnackbar("Brand name is required", { variant: "warning" });
-            return;
-        }
-        if (!logo) {
-            enqueueSnackbar("Brand logo is required", { variant: "warning" });
-            return;
-        }
-        if (highlights.length === 0) {
-            enqueueSnackbar("Add Highlights", { variant: "warning" });
-            return;
-        }
-        if (specs.length < 2) {
-            enqueueSnackbar("Add minimum 2 specifications", { variant: "warning" });
-            return;
-        }
-        if (images.length === 0) {
-            enqueueSnackbar("Add product images", { variant: "warning" });
-            return;
-        }
+    if (!brand.trim()) {
+        enqueueSnackbar("Brand name is required", { variant: "warning" });
+        return;
+    }
+    if (!logo) {
+        enqueueSnackbar("Brand logo is required", { variant: "warning" });
+        return;
+    }
+    if (highlights.length === 0) {
+        enqueueSnackbar("Add Highlights", { variant: "warning" });
+        return;
+    }
+    if (specs.length < 2) {
+        enqueueSnackbar("Add minimum 2 specifications", { variant: "warning" });
+        return;
+    }
+    if (images.length === 0) {
+        enqueueSnackbar("Add product images", { variant: "warning" });
+        return;
+    }
 
-        const productData = {
-            name,
-            description,
-            price,
-            cuttedPrice,
-            category,
-            stock,
-            warranty,
-            highlights,
-            specifications: specs,
-            images,
-            brand: {
-                name: brand,
-                logo: {
-                    public_id: "brand-logo",
-                    url: logo,
-                },
+    // ✅ FINAL PAYLOAD (THIS FIXES EVERYTHING)
+    const productData = {
+        name,
+        description,
+        price,
+        cuttedPrice,
+        category,
+        stock,
+        warranty,
+
+        highlights,
+        specifications: specs,
+
+        images, // base64 array
+
+        brand: {
+            name: brand,
+            logo: {
+                public_id: "brand-logo",
+                url: logo, // base64
             },
-        };
-
-        dispatch(createProduct(productData));
+        },
     };
+
+    console.log("FINAL PRODUCT DATA 👉", productData);
+
+    dispatch(createProduct(productData));
+};
+
 
     return (
         <>
             <MetaData title="Admin: New Product | IntelliCart" />
 
             {loading && <BackdropLoader />}
+            <form onSubmit={newProductSubmitHandler} encType="multipart/form-data" className="flex flex-col sm:flex-row bg-white rounded-lg shadow p-4" id="mainform">
 
-            <form onSubmit={newProductSubmitHandler} encType="multipart/form-data"
-                className="flex flex-col sm:flex-row bg-white rounded-lg shadow p-4"
-                id="mainform">
-
-                {/* LEFT */}
                 <div className="flex flex-col gap-3 m-2 sm:w-1/2">
-                    <TextField label="Name" size="small" required value={name} onChange={(e) => setName(e.target.value)} />
-                    <TextField label="Description" multiline rows={3} size="small" required value={description} onChange={(e) => setDescription(e.target.value)} />
-
+                    <TextField
+                        label="Name"
+                        variant="outlined"
+                        size="small"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                    />
+                    <TextField
+                        label="Description"
+                        multiline
+                        rows={3}
+                        required
+                        variant="outlined"
+                        size="small"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                    />
                     <div className="flex justify-between">
-                        <TextField label="Price" type="number" size="small" required value={price} onChange={(e) => setPrice(e.target.value)} />
-                        <TextField label="Cutted Price" type="number" size="small" required value={cuttedPrice} onChange={(e) => setCuttedPrice(e.target.value)} />
+                        <TextField
+                            label="Price"
+                            type="number"
+                            variant="outlined"
+                            size="small"
+                            InputProps={{
+                                inputProps: {
+                                    min: 0
+                                }
+                            }}
+                            required
+                            value={price}
+                            onChange={(e) => setPrice(e.target.value)}
+                        />
+                        <TextField
+                            label="Cutted Price"
+                            type="number"
+                            variant="outlined"
+                            size="small"
+                            InputProps={{
+                                inputProps: {
+                                    min: 0
+                                }
+                            }}
+                            required
+                            value={cuttedPrice}
+                            onChange={(e) => setCuttedPrice(e.target.value)}
+                        />
                     </div>
-
                     <div className="flex justify-between gap-4">
-                        <TextField label="Category" select fullWidth size="small" required value={category} onChange={(e) => setCategory(e.target.value)}>
+                        <TextField
+                            label="Category"
+                            select
+                            fullWidth
+                            variant="outlined"
+                            size="small"
+                            required
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                        >
                             {categories.map((el, i) => (
-                                <MenuItem value={el} key={i}>{el}</MenuItem>
+                                <MenuItem value={el} key={i}>
+                                    {el}
+                                </MenuItem>
                             ))}
                         </TextField>
-
-                        <TextField label="Stock" type="number" size="small" required value={stock} onChange={(e) => setStock(e.target.value)} />
-                        <TextField label="Warranty" type="number" size="small" required value={warranty} onChange={(e) => setWarranty(e.target.value)} />
+                        <TextField
+                            label="Stock"
+                            type="number"
+                            variant="outlined"
+                            size="small"
+                            InputProps={{
+                                inputProps: {
+                                    min: 0
+                                }
+                            }}
+                            required
+                            value={stock}
+                            onChange={(e) => setStock(e.target.value)}
+                        />
+                        <TextField
+                            label="Warranty"
+                            type="number"
+                            variant="outlined"
+                            size="small"
+                            InputProps={{
+                                inputProps: {
+                                    min: 0
+                                }
+                            }}
+                            required
+                            value={warranty}
+                            onChange={(e) => setWarranty(e.target.value)}
+                        />
                     </div>
 
-                    <h2 className="font-medium">Add Highlights</h2>
-
-                    {/* Highlights */}
                     <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-center border rounded">
-                            <input
-                                value={highlightInput}
-                                onChange={(e) => setHighlightInput(e.target.value)}
-                                type="text"
-                                placeholder="Highlight"
-                                className="px-2 flex-1 outline-none border-none"
-                            />
-                            <span
-                                onClick={addHighlight}
-                                className="py-2 px-6 bg-primary-blue text-white rounded-r hover:shadow-lg cursor-pointer"
-                            >
-                                Add
-                            </span>
+                            <input value={highlightInput} onChange={(e) => setHighlightInput(e.target.value)} type="text" placeholder="Highlight" className="px-2 flex-1 outline-none border-none" />
+                            <span onClick={() => addHighlight()} className="py-2 px-6 bg-primary-blue text-white rounded-r hover:shadow-lg cursor-pointer">Add</span>
                         </div>
 
                         <div className="flex flex-col gap-1.5">
                             {highlights.map((h, i) => (
-                                <div
-                                    key={i}
-                                    className="flex justify-between rounded items-center py-1 px-2 bg-green-50"
-                                >
+                                <div className="flex justify-between rounded items-center py-1 px-2 bg-green-50">
                                     <p className="text-green-800 text-sm font-medium">{h}</p>
-                                    <span
-                                        onClick={() => deleteHighlight(i)}
-                                        className="text-red-600 hover:bg-red-100 p-1 rounded-full cursor-pointer"
-                                    >
+                                    <span onClick={() => deleteHighlight(i)} className="text-red-600 hover:bg-red-100 p-1 rounded-full cursor-pointer">
                                         <DeleteIcon />
                                     </span>
                                 </div>
@@ -226,95 +273,69 @@ const NewProduct = () => {
                         </div>
                     </div>
 
-
                     <h2 className="font-medium">Brand Details</h2>
-
                     <div className="flex justify-between gap-4 items-start">
-                        <TextField label="Brand" size="small" required value={brand} onChange={(e) => setBrand(e.target.value)} />
-
+                        <TextField
+                            label="Brand"
+                            type="text"
+                            variant="outlined"
+                            size="small"
+                            required
+                            value={brand}
+                            onChange={(e) => setBrand(e.target.value)}
+                        />
                         <div className="w-24 h-10 flex items-center justify-center border rounded-lg">
                             {!logoPreview ? <ImageIcon /> :
-                                <img src={logoPreview} alt="Brand Logo" className="w-full h-full object-contain" />
+                                <img draggable="false" src={logoPreview} alt="Brand Logo" className="w-full h-full object-contain" />
                             }
                         </div>
-
-                        <label className="rounded bg-gray-400 text-center cursor-pointer text-white py-2 px-2.5 shadow">
-                            <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
+                        <label className="rounded bg-gray-400 text-center cursor-pointer text-white py-2 px-2.5 shadow hover:shadow-lg">
+                            <input
+                                type="file"
+                                name="logo"
+                                accept="image/*"
+                                onChange={handleLogoChange}
+                                className="hidden"
+                            />
                             Choose Logo
                         </label>
                     </div>
+
                 </div>
 
-                {/* RIGHT */}
-                <div className="flex flex-col gap-3 m-2 sm:w-1/2">
-
-                    {/* Specifications */}
+                <div className="flex flex-col gap-2 m-2 sm:w-1/2">
                     <h2 className="font-medium">Specifications</h2>
 
                     <div className="flex justify-evenly gap-2 items-center">
-                        <TextField
-                            name="title"
-                            value={specsInput.title}
-                            onChange={handleSpecsChange}
-                            label="Name"
-                            size="small"
-                        />
-
-                        <TextField
-                            name="description"
-                            value={specsInput.description}
-                            onChange={handleSpecsChange}
-                            label="Description"
-                            size="small"
-                        />
-
-                        <span
-                            onClick={addSpecs}
-                            className="py-2 px-6 bg-primary-blue text-white rounded hover:shadow-lg cursor-pointer"
-                        >
-                            Add
-                        </span>
-
+                        <TextField value={specsInput.title} onChange={handleSpecsChange} name="title" label="Name" placeholder="Model No" variant="outlined" size="small" />
+                        <TextField value={specsInput.description} onChange={handleSpecsChange} name="description" label="Description" placeholder="WJDK42DF5" variant="outlined" size="small" />
+                        <span onClick={() => addSpecs()} className="py-2 px-6 bg-primary-blue text-white rounded hover:shadow-lg cursor-pointer">Add</span>
                     </div>
 
                     <div className="flex flex-col gap-1.5">
                         {specs.map((spec, i) => (
-                            <div
-                                key={i}
-                                className="flex justify-between items-center text-sm rounded bg-blue-50 py-1 px-2"
-                            >
+                            <div className="flex justify-between items-center text-sm rounded bg-blue-50 py-1 px-2">
                                 <p className="text-gray-500 font-medium">{spec.title}</p>
                                 <p>{spec.description}</p>
-                                <span
-                                    onClick={() => deleteSpec(i)}
-                                    className="text-red-600 hover:bg-red-200 bg-red-100 p-1 rounded-full cursor-pointer"
-                                >
+                                <span onClick={() => deleteSpec(i)} className="text-red-600 hover:bg-red-200 bg-red-100 p-1 rounded-full cursor-pointer">
                                     <DeleteIcon />
                                 </span>
                             </div>
                         ))}
                     </div>
 
-
-                    {/* Product Images */}
                     <h2 className="font-medium">Product Images</h2>
-
                     <div className="flex gap-2 overflow-x-auto h-32 border rounded">
                         {imagesPreview.map((image, i) => (
-                            <img
-                                key={i}
-                                src={image}
-                                alt="Product"
-                                className="w-full h-full object-contain"
-                            />
+                            <img draggable="false" src={image} alt="Product" key={i} className="w-full h-full object-contain" />
                         ))}
                     </div>
-
-                    <label className="rounded font-medium bg-gray-400 text-center cursor-pointer text-white p-2 shadow my-2">
+                    <label className="rounded font-medium bg-gray-400 text-center cursor-pointer text-white p-2 shadow hover:shadow-lg my-2">
                         <input
                             type="file"
-                            multiple
+                            name="images"
                             accept="image/*"
+                            multiple
                             onChange={handleProductImageChange}
                             className="hidden"
                         />
@@ -322,12 +343,10 @@ const NewProduct = () => {
                     </label>
 
                     <div className="flex justify-end">
-                        <input
-                            type="submit"
-                            className="bg-primary-orange uppercase w-1/3 p-3 text-white font-medium rounded shadow cursor-pointer"
-                            value="Submit"
-                        />
+                        <input form="mainform" type="submit" className="bg-primary-orange uppercase w-1/3 p-3 text-white font-medium rounded shadow hover:shadow-lg cursor-pointer" value="Submit" />
+                        navigate('/admin/products')
                     </div>
+
                 </div>
 
             </form>
