@@ -246,6 +246,55 @@ const NewProduct = () => {
                 </div>
 
                 {/* RIGHT */}
+                <h2 className='font-medium'>Add 2 specifications</h2>
+                {/* Specifications */}
+                <h2 className="font-medium">Specifications</h2>
+
+                <div className="flex justify-evenly gap-2 items-center">
+                    <TextField
+                        value={specsInput.title}
+                        onChange={handleSpecsChange}
+                        name="title"
+                        label="Name"
+                        placeholder="Model No"
+                        variant="outlined"
+                        size="small"
+                    />
+                    <TextField
+                        value={specsInput.description}
+                        onChange={handleSpecsChange}
+                        name="description"
+                        label="Description"
+                        placeholder="WJDK42DF5"
+                        variant="outlined"
+                        size="small"
+                    />
+                    <span
+                        onClick={addSpecs}
+                        className="py-2 px-6 bg-primary-blue text-white rounded hover:shadow-lg cursor-pointer"
+                    >
+                        Add
+                    </span>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                    {specs.map((spec, i) => (
+                        <div
+                            key={i}
+                            className="flex justify-between items-center text-sm rounded bg-blue-50 py-1 px-2"
+                        >
+                            <p className="text-gray-500 font-medium">{spec.title}</p>
+                            <p>{spec.description}</p>
+                            <span
+                                onClick={() => deleteSpec(i)}
+                                className="text-red-600 hover:bg-red-200 bg-red-100 p-1 rounded-full cursor-pointer"
+                            >
+                                <DeleteIcon />
+                            </span>
+                        </div>
+                    ))}
+                </div>
+
                 <div className="flex flex-col gap-2 m-2 sm:w-1/2">
                     <h2 className="font-medium">Product Images</h2>
 
