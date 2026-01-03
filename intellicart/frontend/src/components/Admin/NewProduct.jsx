@@ -246,75 +246,90 @@ const NewProduct = () => {
                 </div>
 
                 {/* RIGHT */}
-                <h2 className='font-medium'>Add 2 specifications</h2>
-                {/* Specifications */}
-                <h2 className="font-medium">Specifications</h2>
+                <div className="flex flex-col gap-3 m-2 sm:w-1/2">
 
-                <div className="flex justify-evenly gap-2 items-center">
-                    <TextField
-                        value={specsInput.title}
-                        onChange={handleSpecsChange}
-                        name="title"
-                        label="Name"
-                        placeholder="Model No"
-                        variant="outlined"
-                        size="small"
-                    />
-                    <TextField
-                        value={specsInput.description}
-                        onChange={handleSpecsChange}
-                        name="description"
-                        label="Description"
-                        placeholder="WJDK42DF5"
-                        variant="outlined"
-                        size="small"
-                    />
-                    <span
-                        onClick={addSpecs}
-                        className="py-2 px-6 bg-primary-blue text-white rounded hover:shadow-lg cursor-pointer"
-                    >
-                        Add
-                    </span>
-                </div>
+                    {/* Specifications */}
+                    <h2 className="font-medium">Specifications</h2>
 
-                <div className="flex flex-col gap-1.5">
-                    {specs.map((spec, i) => (
-                        <div
-                            key={i}
-                            className="flex justify-between items-center text-sm rounded bg-blue-50 py-1 px-2"
+                    <div className="flex justify-evenly gap-2 items-center">
+                        <TextField
+                            value={specsInput.title}
+                            onChange={handleSpecsChange}
+                            name="title"
+                            label="Name"
+                            placeholder="Model No"
+                            variant="outlined"
+                            size="small"
+                        />
+                        <TextField
+                            value={specsInput.description}
+                            onChange={handleSpecsChange}
+                            name="description"
+                            label="Description"
+                            placeholder="WJDK42DF5"
+                            variant="outlined"
+                            size="small"
+                        />
+                        <span
+                            onClick={addSpecs}
+                            className="py-2 px-6 bg-primary-blue text-white rounded hover:shadow-lg cursor-pointer"
                         >
-                            <p className="text-gray-500 font-medium">{spec.title}</p>
-                            <p>{spec.description}</p>
-                            <span
-                                onClick={() => deleteSpec(i)}
-                                className="text-red-600 hover:bg-red-200 bg-red-100 p-1 rounded-full cursor-pointer"
-                            >
-                                <DeleteIcon />
-                            </span>
-                        </div>
-                    ))}
-                </div>
+                            Add
+                        </span>
+                    </div>
 
-                <div className="flex flex-col gap-2 m-2 sm:w-1/2">
+                    <div className="flex flex-col gap-1.5">
+                        {specs.map((spec, i) => (
+                            <div
+                                key={i}
+                                className="flex justify-between items-center text-sm rounded bg-blue-50 py-1 px-2"
+                            >
+                                <p className="text-gray-500 font-medium">{spec.title}</p>
+                                <p>{spec.description}</p>
+                                <span
+                                    onClick={() => deleteSpec(i)}
+                                    className="text-red-600 hover:bg-red-200 bg-red-100 p-1 rounded-full cursor-pointer"
+                                >
+                                    <DeleteIcon />
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Product Images */}
                     <h2 className="font-medium">Product Images</h2>
 
                     <div className="flex gap-2 overflow-x-auto h-32 border rounded">
                         {imagesPreview.map((image, i) => (
-                            <img src={image} alt="Product" key={i} className="w-full h-full object-contain" />
+                            <img
+                                key={i}
+                                src={image}
+                                alt="Product"
+                                className="w-full h-full object-contain"
+                            />
                         ))}
                     </div>
 
                     <label className="rounded font-medium bg-gray-400 text-center cursor-pointer text-white p-2 shadow my-2">
-                        <input type="file" multiple accept="image/*" onChange={handleProductImageChange} className="hidden" />
+                        <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={handleProductImageChange}
+                            className="hidden"
+                        />
                         Choose Files
                     </label>
 
                     <div className="flex justify-end">
-                        <input type="submit"
+                        <input
+                            type="submit"
                             className="bg-primary-orange uppercase w-1/3 p-3 text-white font-medium rounded shadow cursor-pointer"
-                            value="Submit" />
+                            value="Submit"
+                        />
                     </div>
                 </div>
+
             </form>
         </>
     );
