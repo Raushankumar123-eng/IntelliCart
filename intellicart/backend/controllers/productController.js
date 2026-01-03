@@ -137,3 +137,35 @@ exports.deleteProduct = asyncErrorHandler(async (req, res, next) => {
   await product.deleteOne();
   res.status(200).json({ success: true });
 });
+
+// ==========================
+// SLIDER PRODUCTS (DUMMY FIX)
+// ==========================
+exports.getSliderProducts = asyncErrorHandler(async (req, res) => {
+  const products = await Product.find().limit(10);
+  res.status(200).json({ success: true, products });
+});
+
+// ==========================
+// GET PRODUCTS (OPTIONAL)
+// ==========================
+exports.getProducts = asyncErrorHandler(async (req, res) => {
+  const products = await Product.find();
+  res.status(200).json({ success: true, products });
+});
+
+// ==========================
+// REVIEWS (SAFE DUMMIES)
+// ==========================
+exports.getProductReviews = asyncErrorHandler(async (req, res) => {
+  res.status(200).json({ success: true, reviews: [] });
+});
+
+exports.deleteReview = asyncErrorHandler(async (req, res) => {
+  res.status(200).json({ success: true });
+});
+
+exports.createProductReview = asyncErrorHandler(async (req, res) => {
+  res.status(200).json({ success: true });
+});
+
