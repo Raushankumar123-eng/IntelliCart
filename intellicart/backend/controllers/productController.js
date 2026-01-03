@@ -68,15 +68,17 @@ exports.getAdminProducts = asyncErrorHandler(async (req, res, next) => {
 // ADMIN — CREATE PRODUCT
 // ==========================
 exports.createProduct = asyncErrorHandler(async (req, res, next) => {
-  req.body.user = req.user.id; // 🔴 REQUIRED
+  req.body.user = req.user.id;
 
-  // 1. images must be array
+  // =========================
+  // 1️⃣ PRODUCT IMAGES
+  // =========================
   let images = [];
 
   if (typeof req.body.images === "string") {
     images.push(req.body.images);
   } else {
-    images = req.body.images;
+    images = req.body.images || [];
   }
 
   const imagesLinks = [];
@@ -94,15 +96,35 @@ exports.createProduct = asyncErrorHandler(async (req, res, next) => {
 
   req.body.images = imagesLinks;
 
-  // 2. brand validation
+  // =========================
+  // 2️⃣ BRAND VALIDATION
+  // =========================
   if (!req.body.brand || !req.body.brand.name) {
     return next(new ErrorHandler("Brand name is required", 400));
   }
 
-  if (!req.body.brand.logo) {
+  if (!req.body.brand.logo || !req.body.brand.logo.url) {
     return next(new ErrorHandler("Brand logo is required", 400));
   }
 
+  // =========================
+  // 3️⃣ BRAND LOGO UPLOAD
+  // =========================
+  const brandLogoResult = await cloudinary.v2.uploader.upload(
+    req.body.brand.logo.url,
+    {
+      folder: "brands",
+    }
+  );
+
+  req.body.brand.logo = {
+    public_id: brandLogoResult.public_id,
+    url: brandLogoResult.secure_url,
+  };
+
+  // =========================
+  // 4️⃣ CREATE PRODUCT
+  // =========================
   const product = await Product.create(req.body);
 
   res.status(201).json({
@@ -110,6 +132,7 @@ exports.createProduct = asyncErrorHandler(async (req, res, next) => {
     product,
   });
 });
+
 
 
 // ==========================
