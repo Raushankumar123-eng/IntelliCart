@@ -100,16 +100,16 @@ const ProductDetails = () => {
         navigate('/cart');
     }
 const buyNow = () => {
-    dispatch({
-        type: "BUY_NOW_PRODUCT",
-        payload: {
-            product,
-            quantity: 1,
-        },
-    });
+    // 1️⃣ Clear cart completely
+    dispatch({ type: "CLEAR_CART" });
 
-    navigate("/shipping?buynow=true");
+    // 2️⃣ Add ONLY this product with quantity = 1
+    dispatch(addItemsToCart(productId, 1));
+
+    // 3️⃣ Go to shipping (normal flow)
+    navigate("/shipping");
 };
+
 
 
     useEffect(() => {
