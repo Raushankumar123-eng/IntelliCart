@@ -46,11 +46,27 @@ const NewProduct = () => {
         setSpecsInput({ ...specsInput, [e.target.name]: e.target.value });
     }
 
-    const addSpecs = () => {
-        if (!specsInput.title.trim() || !specsInput.title.trim()) return;
-        setSpecs([...specs, specsInput]);
-        setSpecsInput({ title: "", description: "" });
+   const addSpecs = () => {
+    if (!specsInput.title.trim() || !specsInput.description.trim()) return;
+    setSpecs([...specs, specsInput]);
+    setSpecsInput({ title: "", description: "" });
+};
+
+
+
+useEffect(() => {
+    if (error) {
+        enqueueSnackbar(error, { variant: "error" });
+        dispatch(clearErrors());
     }
+
+    if (success) {
+        enqueueSnackbar("Product added successfully", { variant: "success" });
+        dispatch({ type: NEW_PRODUCT_RESET });
+        navigate("/admin/products");
+    }
+}, [dispatch, error, success, enqueueSnackbar, navigate]);
+
 
     const addHighlight = () => {
         if (!highlightInput.trim()) return;

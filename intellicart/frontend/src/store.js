@@ -1,6 +1,8 @@
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
 import { composeWithDevTools } from 'redux-devtools-extension';
+import { buyNowReducer } from "./reducers/orderReducer";
+
 
 import { 
     forgotPasswordReducer, 
@@ -46,7 +48,7 @@ const reducer = combineReducers({
     products: productsReducer,
     productDetails: productDetailsReducer,
 
-    // ⭐ ADMIN PRODUCTS → FIX FOR 46 PRODUCTS
+    // ⭐ ADMIN PRODUCTS
     adminProducts: adminProductsReducer,
 
     // REVIEWS
@@ -58,6 +60,9 @@ const reducer = combineReducers({
     cart: cartReducer,
     saveForLater: saveForLaterReducer,
     wishlist: wishlistReducer,
+
+    // ⭐ BUY NOW (🔥 THIS WAS MISSING)
+    buyNow: buyNowReducer,
 
     // ORDERS
     newOrder: newOrderReducer,

@@ -178,3 +178,20 @@ export const orderReducer = (state = {}, { type, payload }) => {
             return state;
     }
 };
+
+
+
+export const buyNowReducer = (state = {}, { type, payload }) => {
+    switch (type) {
+        case "BUY_NOW_PRODUCT":
+            return {
+                product: payload,
+            };
+
+        case "CLEAR_BUY_NOW":
+            return {};
+
+        default:
+            return state;
+    }
+};

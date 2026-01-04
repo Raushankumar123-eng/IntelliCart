@@ -99,11 +99,18 @@ const ProductDetails = () => {
     const goToCart = () => {
         navigate('/cart');
     }
+const buyNow = () => {
+    dispatch({
+        type: "BUY_NOW_PRODUCT",
+        payload: {
+            product,
+            quantity: 1,
+        },
+    });
 
-    const buyNow = () => {
-        addToCartHandler();
-        navigate('/shipping');
-    }
+    navigate("/shipping?buynow=true");
+};
+
 
     useEffect(() => {
         if (error) {

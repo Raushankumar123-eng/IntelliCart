@@ -29,3 +29,6 @@ export const DELETE_ORDER_RESET = "DELETE_ORDER_RESET";
 export const DELETE_ORDER_FAIL = "DELETE_ORDER_FAIL";
 
 export const CLEAR_ERRORS = "CLEAR_ERRORS";
+
+export const BUY_NOW_PRODUCT = "BUY_NOW_PRODUCT";
+export const CLEAR_BUY_NOW = "CLEAR_BUY_NOW";
