@@ -4,22 +4,39 @@ const Order = require("../models/orderModel");
 
 
 // 1️⃣ Create Razorpay Order
-exports.createRazorpayOrder = async (req, res, next) => {
-  const { totalPrice } = req.body;
+exports.createRazorpayOrder = async (req, res) => {
+  try {
+    const { totalPrice } = req.body;
 
-  const options = {
-    amount: Math.round(totalPrice * 100),
-    currency: "INR",
-    receipt: `order_rcpt_${Date.now()}`,
-  };
+    if (!totalPrice || totalPrice <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid amount",
+      });
+    }
 
-  const razorpayOrder = await razorpay.orders.create(options);
+    const options = {
+      amount: Math.round(totalPrice * 100),
+      currency: "INR",
+      receipt: `order_rcpt_${Date.now()}`,
+    };
 
-  res.status(200).json({
-    success: true,
-    razorpayOrder,
-  });
+    const razorpayOrder = await razorpay.orders.create(options);
+
+    return res.status(200).json({
+      success: true,
+      razorpayOrder,
+    });
+  } catch (error) {
+    console.error("Razorpay error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Razorpay order creation failed",
+    });
+  }
 };
+
 
 // 2️⃣ Verify Payment & Save Order
 exports.verifyRazorpayPayment = async (req, res, next) => {

@@ -31,6 +31,13 @@ const Payment = () => {
 
   // 🔹 Razorpay Payment Handler
   const submitHandler = async (e) => {
+
+    if (!cartItems || cartItems.length === 0 || totalPrice <= 0) {
+  enqueueSnackbar("Cart is empty", { variant: "error" });
+  setPayDisable(false);
+  return;
+}
+
     e.preventDefault();
     setPayDisable(true);
 

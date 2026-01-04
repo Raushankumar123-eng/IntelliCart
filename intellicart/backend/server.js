@@ -14,7 +14,8 @@ mongoose.set("debug", true);
 // ==============================
 const allowedOrigins = [
   "https://intelli-cart.vercel.app", // LIVE Frontend
-  "http://localhost:3000"            // Local Dev
+  "http://localhost:3000" ,
+  null          // Local Dev
 ];
 
 app.use((req, res, next) => {
