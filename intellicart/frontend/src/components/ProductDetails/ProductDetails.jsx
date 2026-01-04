@@ -111,6 +111,15 @@ const buyNow = () => {
 };
 
 
+const addSpecs = () => {
+    if (!specsInput.title.trim() || !specsInput.description.trim()) return;
+
+    setSpecs([...specs, specsInput]);
+    setSpecsInput({ title: "", description: "" });
+};
+
+
+
 
     useEffect(() => {
         if (error) {
