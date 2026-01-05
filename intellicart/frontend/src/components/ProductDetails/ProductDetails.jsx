@@ -99,26 +99,16 @@ const ProductDetails = () => {
     const goToCart = () => {
         navigate('/cart');
     }
-const buyNow = () => {
-    // 1️⃣ Clear cart completely
-    dispatch({ type: "CLEAR_CART" });
+    const buyNow = () => {
+        // 1️⃣ Clear cart completely
+        dispatch({ type: "CLEAR_CART" });
 
-    // 2️⃣ Add ONLY this product with quantity = 1
-    dispatch(addItemsToCart(productId, 1));
+        // 2️⃣ Add ONLY this product with quantity = 1
+        dispatch(addItemsToCart(productId, 1));
 
-    // 3️⃣ Go to shipping (normal flow)
-    navigate("/shipping");
-};
-
-
-const addSpecs = () => {
-    if (!specsInput.title.trim() || !specsInput.description.trim()) return;
-
-    setSpecs([...specs, specsInput]);
-    setSpecsInput({ title: "", description: "" });
-};
-
-
+        // 3️⃣ Go to shipping (normal flow)
+        navigate("/shipping");
+    };
 
 
     useEffect(() => {
