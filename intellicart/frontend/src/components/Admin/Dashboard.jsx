@@ -14,50 +14,53 @@ const Dashboard = ({ activeTab, children }) => {
     }, []);
 
     return (
-        <main className="flex min-h-screen mt-14 w-full bg-gray-100 overflow-x-hidden">
+        <>
+            {/* WRAPPER */}
+            <main className="min-h-screen w-full bg-gray-100">
 
-            {/* Sidebar */}
-            {!onMobile && (
-                <div className="hidden md:block w-72 shrink-0">
-                    <Sidebar activeTab={activeTab} />
-                </div>
-            )}
+                {/* SIDEBAR – DESKTOP */}
+                {!onMobile && (
+                    <aside className="fixed left-0 top-14 w-72 h-[calc(100vh-56px)] z-20 bg-white border-r">
+                        <Sidebar activeTab={activeTab} />
+                    </aside>
+                )}
 
-            {/* Mobile Sidebar */}
-            {onMobile && toggleSidebar && (
-                <div className="fixed inset-0 z-40 bg-black/40 md:hidden">
-                    <div className="w-72 h-full bg-white">
-                        <Sidebar
-                            activeTab={activeTab}
-                            setToggleSidebar={setToggleSidebar}
-                        />
+                {/* SIDEBAR – MOBILE */}
+                {onMobile && toggleSidebar && (
+                    <div className="fixed inset-0 z-40 bg-black/40">
+                        <div className="w-72 h-full bg-white">
+                            <Sidebar
+                                activeTab={activeTab}
+                                setToggleSidebar={setToggleSidebar}
+                            />
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* Content */}
-            <div className="flex-1 w-full">
-                <div className="flex flex-col gap-6 p-3 sm:p-6 md:p-8">
+                {/* CONTENT */}
+                <section className="pt-14 md:pl-72">
+                    <div className="p-3 sm:p-6 md:p-8 flex flex-col gap-6">
 
-                    {/* Mobile menu button */}
-                    {onMobile && (
-                        <button
-                            onClick={() => setToggleSidebar(true)}
-                            className="md:hidden bg-gray-700 w-10 h-10 rounded-full shadow text-white flex items-center justify-center"
-                        >
-                            <MenuIcon />
-                        </button>
-                    )}
+                        {/* MOBILE MENU BUTTON */}
+                        {onMobile && (
+                            <button
+                                onClick={() => setToggleSidebar(true)}
+                                className="md:hidden bg-gray-700 w-10 h-10 rounded-full shadow text-white flex items-center justify-center"
+                            >
+                                <MenuIcon />
+                            </button>
+                        )}
 
-                    {/* Page content */}
-                    <div className="w-full">
-                        {children}
+                        {/* PAGE CONTENT */}
+                        <div className="w-full">
+                            {children}
+                        </div>
+
                     </div>
+                </section>
 
-                </div>
-            </div>
-
-        </main>
+            </main>
+        </>
     );
 };
 
